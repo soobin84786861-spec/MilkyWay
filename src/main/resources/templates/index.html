@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MilkyWay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0a1a;
+            color: #e8e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .stars {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(100, 80, 200, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(60, 120, 200, 0.12) 0%, transparent 50%);
+        }
+
+        .stars::before,
+        .stars::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(1px 1px at 10% 15%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 40% 10%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 55% 60%, rgba(255,255,255,0.6) 0%, transparent 100%),
+                radial-gradient(1px 1px at 70% 25%, #fff 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 85% 45%, rgba(255,255,255,0.8) 0%, transparent 100%),
+                radial-gradient(1px 1px at 15% 75%, rgba(255,255,255,0.5) 0%, transparent 100%),
+                radial-gradient(1px 1px at 60% 85%, #fff 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 90% 80%, rgba(255,255,255,0.7) 0%, transparent 100%),
+                radial-gradient(1px 1px at 35% 90%, rgba(255,255,255,0.6) 0%, transparent 100%),
+                radial-gradient(1px 1px at 5%  50%, rgba(255,255,255,0.4) 0%, transparent 100%),
+                radial-gradient(1px 1px at 78% 5%,  rgba(255,255,255,0.6) 0%, transparent 100%);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .logo {
+            font-size: 5rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa, #f9a8d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-shadow: none;
+            filter: drop-shadow(0 0 30px rgba(167, 139, 250, 0.4));
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: rgba(200, 200, 230, 0.7);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 2rem 3rem;
+            backdrop-filter: blur(12px);
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .card p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: rgba(220, 220, 240, 0.85);
+        }
+
+        .team {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            color: #c4b5fd;
+            padding: 0.35rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        .badge.leader {
+            background: rgba(249, 168, 212, 0.15);
+            border-color: rgba(249, 168, 212, 0.3);
+            color: #f9a8d4;
+        }
+
+        .footer {
+            margin-top: 3rem;
+            font-size: 0.8rem;
+            color: rgba(150, 150, 180, 0.5);
+            letter-spacing: 0.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+
+    <div class="container">
+        <div class="logo">MilkyWay</div>
+        <div class="tagline">SKKU &nbsp;·&nbsp; 은하수를 여행하는 개발자들</div>
+
+        <div class="card">
+            <p>안녕하세요! MilkyWay 프로젝트에 오신 것을 환영합니다.</p>
+
+            <div class="team">
+                <span class="badge leader">진짜 대장 &nbsp;은미</span>
+                <span class="badge leader">개발 대장 &nbsp;희중</span>
+                <span class="badge">수빈</span>
+            </div>
+        </div>
+
+        <div class="footer">아자아자 화이팅 🌌</div>
+    </div>
+</body>
+</html>
