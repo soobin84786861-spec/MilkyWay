@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>서울 러브버그 위험 지도</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!--
+      Kakao Maps SDK: index.html 에서 직접 로드하는 것이 가장 안전.
+      동적 createElement 방식은 Referer 헤더 누락으로 403이 발생할 수 있음.
+      %VITE_KAKAO_MAP_KEY% → Vite가 .env 값으로 자동 치환.
+    -->
+    <script
+      type="text/javascript"
+      src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7429bd3e2e4b90c098a585d422bd5319&autoload=false"
+    ></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
