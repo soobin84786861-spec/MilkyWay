@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "instagram")
 public class InstagramProperties {
-    private String sessionId;
-    private String csrfToken;
+    private String username;
+    private String password;
     private String userAgent;
+    private boolean browserLogin = true;
+    private boolean enabled = true;
 }

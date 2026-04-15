@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew compileJava --rerun-tasks -Pcompiler.args=-Xlint:deprecation)",
+      "Bash(./gradlew compileJava --rerun-tasks)"
+    ]
+  }
+}
