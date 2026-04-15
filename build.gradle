@@ -22,6 +22,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	implementation "com.fasterxml.jackson.core:jackson-databind"
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
@@ -30,14 +31,6 @@ dependencies {
 	testCompileOnly 'org.projectlombok:lombok'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation 'com.microsoft.playwright:playwright:1.50.0'
-}
-
-tasks.register('installPlaywright', JavaExec) {
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'com.microsoft.playwright.CLI'
-    args = ['install', 'chromium']
 }
 
 tasks.named('test') {

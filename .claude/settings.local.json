@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(./gradlew compileJava --rerun-tasks -Pcompiler.args=-Xlint:deprecation)",
-      "Bash(./gradlew compileJava --rerun-tasks)"
+      "Bash(./gradlew compileJava --rerun-tasks)",
+      "WebFetch(domain:developers.facebook.com)",
+      "Bash(curl -s -L --max-time 30 -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/120.0.0.0 Safari/537.36\" \"https://developers.facebook.com/docs/instagram-platform/instagram-api-with-facebook-login/hashtag-search?locale=ko_KR\")",
+      "WebSearch",
+      "Bash(rm \"C:/Users/soobi/git/MilkyWay/src/test/java/com/skku/milkyway/api/instagram/service/RealInstagramCrawlerServiceTest.java\")",
+      "Bash(rm \"C:/Users/soobi/git/MilkyWay/src/main/java/com/skku/milkyway/config/SchedulingConfig.java\")",
+      "Bash(rmdir \"C:/Users/soobi/git/MilkyWay/src/test/java/com/skku/milkyway/api/instagram/service\")",
+      "Bash(rmdir \"C:/Users/soobi/git/MilkyWay/src/test/java/com/skku/milkyway/api/instagram\")",
+      "Bash(rmdir \"C:/Users/soobi/git/MilkyWay/src/test/java/com/skku/milkyway/api\")"
     ]
   }
 }

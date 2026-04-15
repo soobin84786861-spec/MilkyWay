@@ -1,6 +1,5 @@
 package com.skku.milkyway.api.risk.service;
 
-import com.skku.milkyway.api.instagram.store.InstagramCountStore;
 import com.skku.milkyway.api.risk.code.RiskLevel;
 import com.skku.milkyway.api.risk.code.SeoulDistrict;
 import com.skku.milkyway.api.risk.response.RegionRiskResponse;
@@ -16,8 +15,6 @@ import static com.skku.milkyway.api.risk.code.SeoulDistrict.*;
 @RequiredArgsConstructor
 public class RiskService {
 
-    private final InstagramCountStore instagramCountStore;
-
     private RegionRiskResponse of(SeoulDistrict district, RiskLevel level, int percent) {
         return new RegionRiskResponse(
                 district.getKoreanName(),
@@ -25,7 +22,7 @@ public class RiskService {
                 district.getLongitude(),
                 level,
                 percent,
-                instagramCountStore.getCount(district)
+                0
         );
     }
 
