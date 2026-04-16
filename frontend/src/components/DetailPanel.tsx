@@ -12,6 +12,22 @@ interface Props {
   onClose: () => void;
 }
 
+const SKY: Record<number, { label: string; icon: string }> = {
+  1: { label: '맑음',    icon: '☀️' },
+  3: { label: '구름많음', icon: '⛅' },
+  4: { label: '흐림',    icon: '☁️' },
+};
+
+const PTY: Record<number, { label: string; icon: string }> = {
+  0: { label: '없음',         icon: '—' },
+  1: { label: '비',           icon: '🌧️' },
+  2: { label: '비/눈',        icon: '🌨️' },
+  3: { label: '눈',           icon: '❄️' },
+  5: { label: '빗방울',       icon: '🌦️' },
+  6: { label: '빗방울+눈날림', icon: '🌦️' },
+  7: { label: '눈날림',       icon: '🌨️' },
+};
+
 const SEVERITY_STYLE = {
   danger: { bg: 'bg-red-50 border-red-100', icon: '⚠️', text: 'text-red-700' },
   warning: { bg: 'bg-red-50 border-red-100', icon: '⚠️', text: 'text-red-700' },
@@ -92,8 +108,19 @@ export default function DetailPanel({ district, onClose }: Props) {
               </p>
               <div className="space-y-2">
                 {[
-                  { icon: '🌡️', label: '온도', value: `${district.temperature}°C` },
-                  { icon: '💧', label: '습도', value: `${district.humidity}%` },
+                  { icon: '🌡️', label: '온도',   value: `${district.temperature}°C` },
+                  { icon: '💧', label: '습도',   value: `${district.humidity}%` },
+                  {
+                    icon: (SKY[district.sky] ?? SKY[1]).icon,
+                    label: '하늘상태',
+                    value: (SKY[district.sky] ?? SKY[1]).label,
+                  },
+                  ...(district.precipitationType !== 0 ? [{
+                    icon: (PTY[district.precipitationType] ?? PTY[0]).icon,
+                    label: '강수형태',
+                    value: (PTY[district.precipitationType] ?? PTY[0]).label,
+                  }] : []),
+                  { icon: '💨', label: '풍속',   value: `${district.windSpeed.toFixed(1)} m/s` },
                 ].map(({ icon, label, value }) => (
                   <div
                     key={label}

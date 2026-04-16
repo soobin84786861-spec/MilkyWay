@@ -8,11 +8,13 @@ import DetailPanel from './components/DetailPanel';
 import Top5Panel from './components/Top5Panel';
 import Legend from './components/Legend';
 
-/** API 응답 + mockData 를 병합해 District 생성 */
+/** API 응답 + mockData 를 병합해 District 생성.
+ *  날씨 데이터(temperature, humidity, sky, precipitationType, windSpeed)는
+ *  API 응답 값을 우선 사용하고, actionGuides/aiAnalysis 등 상세 필드만 mock 에서 채운다. */
 function mergeWithMock(api: RegionRiskResponse): District {
   const mock = mockDistricts.find((m) => m.name === api.regionName);
   return {
-    ...(mock ?? mockDistricts[0]),   // 상세 필드는 mock 에서 채움
+    ...(mock ?? mockDistricts[0]),   // actionGuides, aiAnalysis, id 등 상세 필드
     districtCode: api.districtCode,
     name: api.regionName,
     riskLevel: api.riskLevel,
@@ -21,6 +23,12 @@ function mergeWithMock(api: RegionRiskResponse): District {
     lat: api.latitude,
     lng: api.longitude,
     instaCnt: api.instaCnt,
+    // 실제 기상청 API 데이터로 덮어쓰기
+    temperature: api.temperature,
+    humidity: api.humidity,
+    sky: api.sky,
+    precipitationType: api.precipitationType,
+    windSpeed: api.windSpeed,
   };
 }
 

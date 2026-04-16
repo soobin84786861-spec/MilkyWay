@@ -8,6 +8,11 @@ export interface RegionRiskResponse {
   riskLevel: RiskLevel;
   riskPercent: number;
   instaCnt: number;
+  temperature: number;
+  humidity: number;
+  sky: number;
+  precipitationType: number;
+  windSpeed: number;
 }
 
 export interface AiRiskAnalysisResponse {

@@ -1,6 +1,6 @@
 package com.skku.milkyway.api.risk.controller;
 
-import com.skku.milkyway.api.risk.code.RiskLevel;
+import com.skku.milkyway.api.code.RiskLevel;
 import com.skku.milkyway.api.risk.response.RegionRiskResponse;
 import com.skku.milkyway.api.risk.service.RiskService;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +19,7 @@ public class RiskController {
     private final RiskService riskService;
 
     @GetMapping("/regions")
-    public List<RegionRiskResponse> getRegions(
-            @RequestParam(required = false) RiskLevel riskLevel
-    ) {
+    public List<RegionRiskResponse> getRegions(@RequestParam(required = false) RiskLevel riskLevel) {
         return riskService.getRegions(riskLevel);
     }
 }

@@ -2,7 +2,7 @@ package com.skku.milkyway.api.ai.controller;
 
 import com.skku.milkyway.api.ai.dto.AiRiskAnalysisResponse;
 import com.skku.milkyway.api.ai.service.AiRiskAnalysisService;
-import com.skku.milkyway.api.risk.code.SeoulDistrict;
+import com.skku.milkyway.api.code.SeoulDistrict;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

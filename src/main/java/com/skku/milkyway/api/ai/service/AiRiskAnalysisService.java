@@ -1,7 +1,7 @@
 package com.skku.milkyway.api.ai.service;
 
 import com.skku.milkyway.api.ai.dto.AiRiskAnalysisResponse;
-import com.skku.milkyway.api.risk.code.SeoulDistrict;
+import com.skku.milkyway.api.code.SeoulDistrict;
 import com.skku.milkyway.api.risk.response.RegionRiskResponse;
 import com.skku.milkyway.api.risk.service.RiskService;
 import lombok.extern.slf4j.Slf4j;
