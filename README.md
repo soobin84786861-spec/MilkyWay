@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🪲 MilkyWay Vv
+# 🪲 MilkyWay
 
 ### 서울 자치구별 러브버그 출몰 위험도 실시간 시각화 플랫폼
 
