@@ -4,6 +4,7 @@ export const mockDistricts: District[] = [
   // ── CRITICAL (매우위험) ──────────────────────────────────────────────
   {
     id: 'gangnam',
+    districtCode: 'GANGNAM',
     name: '강남구',
     riskLevel: 'CRITICAL',
     riskScore: 89,
@@ -23,6 +24,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'songpa',
+    districtCode: 'SONGPA',
     name: '송파구',
     riskLevel: 'CRITICAL',
     riskScore: 84,
@@ -43,6 +45,7 @@ export const mockDistricts: District[] = [
   // ── DANGER (위험) ────────────────────────────────────────────────────
   {
     id: 'seocho',
+    districtCode: 'SEOCHO',
     name: '서초구',
     riskLevel: 'DANGER',
     riskScore: 76,
@@ -61,6 +64,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'gwangjin',
+    districtCode: 'GWANGJIN',
     name: '광진구',
     riskLevel: 'DANGER',
     riskScore: 73,
@@ -78,6 +82,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'yongsan',
+    districtCode: 'YONGSAN',
     name: '용산구',
     riskLevel: 'DANGER',
     riskScore: 71,
@@ -95,6 +100,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'seongdong',
+    districtCode: 'SEONGDONG',
     name: '성동구',
     riskLevel: 'DANGER',
     riskScore: 68,
@@ -112,6 +118,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'mapo',
+    districtCode: 'MAPO',
     name: '마포구',
     riskLevel: 'DANGER',
     riskScore: 65,
@@ -131,6 +138,7 @@ export const mockDistricts: District[] = [
   // ── CAUTION (주의) ───────────────────────────────────────────────────
   {
     id: 'jongno',
+    districtCode: 'JONGNO',
     name: '종로구',
     riskLevel: 'CAUTION',
     riskScore: 52,
@@ -147,6 +155,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'junggu',
+    districtCode: 'JUNG',
     name: '중구',
     riskLevel: 'CAUTION',
     riskScore: 48,
@@ -163,6 +172,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'dongdaemun',
+    districtCode: 'DONGDAEMUN',
     name: '동대문구',
     riskLevel: 'CAUTION',
     riskScore: 45,
@@ -179,6 +189,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'seongbuk',
+    districtCode: 'SEONGBUK',
     name: '성북구',
     riskLevel: 'CAUTION',
     riskScore: 42,
@@ -195,6 +206,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'eunpyeong',
+    districtCode: 'EUNPYEONG',
     name: '은평구',
     riskLevel: 'CAUTION',
     riskScore: 38,
@@ -211,6 +223,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'seodaemun',
+    districtCode: 'SEODAEMUN',
     name: '서대문구',
     riskLevel: 'CAUTION',
     riskScore: 35,
@@ -227,6 +240,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'yeongdeungpo',
+    districtCode: 'YEONGDEUNGPO',
     name: '영등포구',
     riskLevel: 'CAUTION',
     riskScore: 32,
@@ -243,6 +257,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'guro',
+    districtCode: 'GURO',
     name: '구로구',
     riskLevel: 'CAUTION',
     riskScore: 30,
@@ -261,6 +276,7 @@ export const mockDistricts: District[] = [
   // ── SAFE (안전) ──────────────────────────────────────────────────────
   {
     id: 'gangbuk',
+    districtCode: 'GANGBUK',
     name: '강북구',
     riskLevel: 'SAFE',
     riskScore: 22,
@@ -275,6 +291,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'dobong',
+    districtCode: 'DOBONG',
     name: '도봉구',
     riskLevel: 'SAFE',
     riskScore: 18,
@@ -289,6 +306,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'nowon',
+    districtCode: 'NOWON',
     name: '노원구',
     riskLevel: 'SAFE',
     riskScore: 20,
@@ -303,6 +321,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'jungnang',
+    districtCode: 'JUNGNANG',
     name: '중랑구',
     riskLevel: 'SAFE',
     riskScore: 24,
@@ -317,6 +336,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'gangdong',
+    districtCode: 'GANGDONG',
     name: '강동구',
     riskLevel: 'SAFE',
     riskScore: 21,
@@ -331,6 +351,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'yangcheon',
+    districtCode: 'YANGCHEON',
     name: '양천구',
     riskLevel: 'SAFE',
     riskScore: 19,
@@ -345,6 +366,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'gangseo',
+    districtCode: 'GANGSEO',
     name: '강서구',
     riskLevel: 'SAFE',
     riskScore: 16,
@@ -359,6 +381,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'geumcheon',
+    districtCode: 'GEUMCHEON',
     name: '금천구',
     riskLevel: 'SAFE',
     riskScore: 23,
@@ -373,6 +396,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'dongjak',
+    districtCode: 'DONGJAK',
     name: '동작구',
     riskLevel: 'SAFE',
     riskScore: 17,
@@ -387,6 +411,7 @@ export const mockDistricts: District[] = [
   },
   {
     id: 'gwanak',
+    districtCode: 'GWANAK',
     name: '관악구',
     riskLevel: 'SAFE',
     riskScore: 14,

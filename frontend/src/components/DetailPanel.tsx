@@ -1,12 +1,11 @@
+import { useState, useEffect } from 'react';
 import { District } from '../types';
 import {
-  RISK_LABEL,
-  RISK_DOT_CLASS,
   RISK_TEXT_CLASS,
-  RISK_SCORE_BAR_CLASS,
   getRiskBarColor,
 } from '../utils/riskUtils';
 import RiskBadge from './RiskBadge';
+import { fetchAiRiskAnalysis, AiRiskAnalysisResponse } from '../api/riskApi';
 
 interface Props {
   district: District | null;
@@ -19,31 +18,22 @@ const SEVERITY_STYLE = {
   info: { bg: 'bg-amber-50 border-amber-100', icon: '💡', text: 'text-amber-700' },
 };
 
-function renderAiAnalysis(text: string) {
-  return text.split('\n').map((line, i) => {
-    if (line.startsWith('**') && line.endsWith('**')) {
-      return (
-        <p key={i} className="font-semibold text-slate-800 mt-3 mb-1">
-          {line.replace(/\*\*/g, '')}
-        </p>
-      );
-    }
-    if (line.startsWith('• ')) {
-      return (
-        <p key={i} className="text-slate-600 text-sm pl-3 leading-relaxed">
-          {line}
-        </p>
-      );
-    }
-    return (
-      <p key={i} className="text-slate-600 text-sm leading-relaxed">
-        {line}
-      </p>
-    );
-  });
-}
-
 export default function DetailPanel({ district, onClose }: Props) {
+  const [aiData, setAiData] = useState<AiRiskAnalysisResponse | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(false);
+
+  useEffect(() => {
+    if (!district) return;
+    setAiData(null);
+    setAiError(false);
+    setAiLoading(true);
+    fetchAiRiskAnalysis(district.districtCode)
+      .then(setAiData)
+      .catch(() => setAiError(true))
+      .finally(() => setAiLoading(false));
+  }, [district?.name]);
+
   return (
     <div
       className={`absolute top-0 right-0 h-full w-[360px] bg-white shadow-2xl z-30 flex flex-col transition-transform duration-300 ease-out ${
@@ -148,8 +138,33 @@ export default function DetailPanel({ district, onClose }: Props) {
                   AI 위험 분석
                 </p>
               </div>
-              <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-                {renderAiAnalysis(district.aiAnalysis)}
+              <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 min-h-[80px]">
+                {aiLoading && (
+                  <div className="flex items-center gap-2 text-amber-600 text-sm">
+                    <div className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+                    <span>AI 분석 중...</span>
+                  </div>
+                )}
+                {aiError && !aiLoading && (
+                  <p className="text-sm text-slate-400">AI 분석을 불러오지 못했습니다.</p>
+                )}
+                {aiData && !aiLoading && (
+                  <>
+                    <p className="text-slate-700 text-sm leading-relaxed mb-3">
+                      {aiData.description}
+                    </p>
+                    {aiData.actionGuides.length > 0 && (
+                      <ul className="space-y-1">
+                        {aiData.actionGuides.map((guide, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-slate-600 leading-relaxed">
+                            <span className="text-amber-500 flex-shrink-0">•</span>
+                            <span>{guide}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                )}
               </div>
             </section>
 

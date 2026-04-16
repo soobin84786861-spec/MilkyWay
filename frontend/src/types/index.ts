@@ -10,6 +10,7 @@ export interface ActionGuide {
 
 export interface District {
   id: string;
+  districtCode: string;    // SeoulDistrict enum 이름 (예: EUNPYEONG)
   name: string;
   riskLevel: RiskLevel;
   riskScore: number;       // 0~100

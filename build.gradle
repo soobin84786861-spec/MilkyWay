@@ -16,6 +16,7 @@ java {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
 }
 
 dependencies {
@@ -23,6 +24,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation "com.fasterxml.jackson.core:jackson-databind"
+	implementation platform('org.springframework.ai:spring-ai-bom:2.0.0-M4')
+	implementation 'org.springframework.ai:spring-ai-starter-model-google-genai'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'

@@ -1,5 +1,7 @@
 package com.skku.milkyway.api.risk.service;
 
+import com.skku.milkyway.api.ai.dto.WeatherResponse;
+import com.skku.milkyway.api.ai.service.WeatherService;
 import com.skku.milkyway.api.risk.code.RiskLevel;
 import com.skku.milkyway.api.risk.code.SeoulDistrict;
 import com.skku.milkyway.api.risk.response.RegionRiskResponse;
@@ -15,14 +17,20 @@ import static com.skku.milkyway.api.risk.code.SeoulDistrict.*;
 @RequiredArgsConstructor
 public class RiskService {
 
+    private final WeatherService weatherService;
+
     private RegionRiskResponse of(SeoulDistrict district, RiskLevel level, int percent) {
+        WeatherResponse weather = weatherService.getWeather(district);
         return new RegionRiskResponse(
+                district.name(),
                 district.getKoreanName(),
                 district.getLatitude(),
                 district.getLongitude(),
                 level,
                 percent,
-                0
+                0,
+                weather.temperature(),
+                weather.humidity()
         );
     }
 
@@ -54,6 +62,13 @@ public class RiskService {
                 of(JUNGNANG,      SAFE,     24),
                 of(GWANAK,        SAFE,     14)
         );
+    }
+
+    public RegionRiskResponse getRegion(SeoulDistrict district) {
+        return buildData().stream()
+                .filter(r -> r.getDistrictCode().equals(district.name()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("알 수 없는 자치구: " + district));
     }
 
     public List<RegionRiskResponse> getRegions(RiskLevel riskLevel) {

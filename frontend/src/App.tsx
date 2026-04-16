@@ -13,6 +13,7 @@ function mergeWithMock(api: RegionRiskResponse): District {
   const mock = mockDistricts.find((m) => m.name === api.regionName);
   return {
     ...(mock ?? mockDistricts[0]),   // 상세 필드는 mock 에서 채움
+    districtCode: api.districtCode,
     name: api.regionName,
     riskLevel: api.riskLevel,
     riskScore: api.riskPercent,

@@ -10,7 +10,19 @@
       "Bash(rm \"C:/Users/soobi/git/MilkyWay/src/main/java/com/skku/milkyway/config/SchedulingConfig.java\")",
       "Bash(rmdir \"C:/Users/soobi/git/MilkyWay/src/test/java/com/skku/milkyway/api/instagram/service\")",
       "Bash(rmdir \"C:/Users/soobi/git/MilkyWay/src/test/java/com/skku/milkyway/api/instagram\")",
-      "Bash(rmdir \"C:/Users/soobi/git/MilkyWay/src/test/java/com/skku/milkyway/api\")"
+      "Bash(rmdir \"C:/Users/soobi/git/MilkyWay/src/test/java/com/skku/milkyway/api\")",
+      "Bash(./gradlew dependencies:*)",
+      "Bash(curl -s \"https://repo.spring.io/milestone/org/springframework/ai/spring-ai-google-genai-spring-boot-starter/maven-metadata.xml\")",
+      "Bash(curl -s \"https://repo.spring.io/snapshot/org/springframework/ai/spring-ai-google-genai-spring-boot-starter/maven-metadata.xml\")",
+      "Bash(curl -s \"https://search.maven.org/solrsearch/select?q=g:org.springframework.ai+a:spring-ai-google-genai-spring-boot-starter&rows=5&wt=json\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(x['v']\\) for x in d.get\\('response',{}\\).get\\('docs',[]\\)]\")",
+      "Bash(curl -s \"https://search.maven.org/solrsearch/select?q=g:org.springframework.ai&rows=20&wt=json\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(x['a']\\) for x in d.get\\('response',{}\\).get\\('docs',[]\\)]\")",
+      "Bash(curl -s \"https://repo1.maven.org/maven2/org/springframework/ai/\")",
+      "Bash(curl -s \"https://repo1.maven.org/maven2/org/springframework/ai/spring-ai-starter-model-google-genai/maven-metadata.xml\")",
+      "Bash(curl -s \"https://repo1.maven.org/maven2/org/springframework/ai/spring-ai-bom/maven-metadata.xml\")",
+      "Bash(curl:*)",
+      "Bash(npx tsc *)"
     ]
   }
 }
