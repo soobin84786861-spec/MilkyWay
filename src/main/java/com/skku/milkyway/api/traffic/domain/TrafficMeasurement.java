@@ -10,9 +10,5 @@ import lombok.Getter;
 @Builder
 public class TrafficMeasurement {
     private final String pointId;
-    private final String measureDate;
-    private final String measureHour;
-    private final String flowType;
-    private final String laneNumber;
     private final long trafficVolume;
 }

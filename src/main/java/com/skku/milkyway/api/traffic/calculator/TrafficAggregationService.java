@@ -3,10 +3,10 @@ package com.skku.milkyway.api.traffic.calculator;
 import com.skku.milkyway.api.code.SeoulDistrict;
 import com.skku.milkyway.api.traffic.domain.DistrictTrafficAggregate;
 import com.skku.milkyway.api.traffic.domain.TrafficMeasurement;
-import com.skku.milkyway.api.traffic.domain.TrafficPoint;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,19 +14,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-/**
- * 교통량 지점과 측정값을 자치구 단위로 집계하는 서비스.
- *
- * <p>핵심은 총합이 아니라 유효 지점 수를 분모로 하는
- * 지점당 평균 교통량을 계산하는 것이다.</p>
- */
 public class TrafficAggregationService {
 
-    /**
-     * 지점 목록과 측정값 목록을 받아 자치구별 교통량 집계를 계산한다.
-     */
     public List<DistrictTrafficAggregate> aggregate(
-            List<TrafficPoint> points,
+            Map<String, SeoulDistrict> districtBySpotNum,
             List<TrafficMeasurement> measurements
     ) {
         Map<String, Long> trafficByPoint = measurements.stream()
@@ -36,19 +27,16 @@ public class TrafficAggregationService {
                         Collectors.summingLong(TrafficMeasurement::getTrafficVolume)
                 ));
 
-        Map<SeoulDistrict, List<TrafficPoint>> pointsByDistrict = points.stream()
-                .filter(point -> point.getDistrict() != null)
-                .collect(Collectors.groupingBy(
-                        TrafficPoint::getDistrict,
-                        LinkedHashMap::new,
-                        Collectors.toList()
-                ));
+        Map<SeoulDistrict, Set<String>> pointIdsByDistrict = new EnumMap<>(SeoulDistrict.class);
+        for (Map.Entry<String, SeoulDistrict> entry : districtBySpotNum.entrySet()) {
+            pointIdsByDistrict.computeIfAbsent(entry.getValue(), key -> new java.util.LinkedHashSet<>())
+                    .add(entry.getKey());
+        }
 
         List<DistrictTrafficAggregate> result = new ArrayList<>();
         for (SeoulDistrict district : SeoulDistrict.values()) {
-            List<TrafficPoint> districtPoints = pointsByDistrict.getOrDefault(district, List.of());
-            Set<String> validPointIds = districtPoints.stream()
-                    .map(TrafficPoint::getPointId)
+            Set<String> districtPointIds = pointIdsByDistrict.getOrDefault(district, Set.of());
+            Set<String> validPointIds = districtPointIds.stream()
                     .filter(trafficByPoint::containsKey)
                     .collect(Collectors.toSet());
 
@@ -71,9 +59,6 @@ public class TrafficAggregationService {
         return result;
     }
 
-    /**
-     * 평균값을 비교하기 좋게 소수 둘째 자리까지 반올림한다.
-     */
     private double round(double value) {
         return Math.round(value * 100d) / 100d;
     }
