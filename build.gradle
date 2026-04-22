@@ -26,6 +26,7 @@ dependencies {
 	implementation "com.fasterxml.jackson.core:jackson-databind"
 	implementation platform('org.springframework.ai:spring-ai-bom:2.0.0-M4')
 	implementation 'org.springframework.ai:spring-ai-starter-model-google-genai'
+	implementation 'org.springframework.ai:spring-ai-template-st'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'

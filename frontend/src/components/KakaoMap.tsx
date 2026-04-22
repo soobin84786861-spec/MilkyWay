@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { District } from '../types';
 import { RISK_COLOR } from '../utils/riskUtils';
+import seoulBoundaries from '../data/seoulBoundaries.json';
 
 declare global {
   interface Window {
@@ -38,9 +39,12 @@ function createMarkerContent(district: District, isSelected: boolean): string {
   `;
 }
 
+const boundaries = seoulBoundaries as Record<string, { lat: number; lng: number }[]>;
+
 export default function KakaoMap({ districts, selectedDistrict, onDistrictClick }: Props) {
   const mapRef = useRef<any>(null);
   const overlaysRef = useRef<Map<string, any>>(new Map());
+  const polygonsRef = useRef<any[]>([]);
   const [status, setStatus] = useState<MapStatus>('loading');
 
   useEffect(() => {
@@ -75,6 +79,7 @@ export default function KakaoMap({ districts, selectedDistrict, onDistrictClick 
         }
       });
 
+      renderPolygons(districts);
       renderOverlays(districts);
       setStatus('ready');
     });
@@ -84,6 +89,7 @@ export default function KakaoMap({ districts, selectedDistrict, onDistrictClick 
   useEffect(() => {
     if (!mapRef.current) return;
     clearOverlays();
+    renderPolygons(districts);
     renderOverlays(districts);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [districts]);
@@ -101,6 +107,34 @@ export default function KakaoMap({ districts, selectedDistrict, onDistrictClick 
   function clearOverlays() {
     overlaysRef.current.forEach((o) => o.setMap(null));
     overlaysRef.current.clear();
+    polygonsRef.current.forEach((p) => p.setMap(null));
+    polygonsRef.current = [];
+  }
+
+  function renderPolygons(districtList: District[]) {
+    if (!mapRef.current || !window.kakao) return;
+
+    districtList.forEach((district) => {
+      const coords = boundaries[district.districtCode];
+      if (!coords) return;
+
+      const path = coords.map(
+        ({ lat, lng }) => new window.kakao.maps.LatLng(lat, lng)
+      );
+      const color = RISK_COLOR[district.riskLevel];
+
+      const polygon = new window.kakao.maps.Polygon({
+        map: mapRef.current,
+        path,
+        strokeWeight: 1.5,
+        strokeColor: color,
+        strokeOpacity: 0.7,
+        fillColor: color,
+        fillOpacity: 0.12,
+      });
+
+      polygonsRef.current.push(polygon);
+    });
   }
 
   function renderOverlays(districtList: District[]) {

@@ -17,6 +17,8 @@ export interface RegionRiskResponse {
 
 export interface AiRiskAnalysisResponse {
   description: string;
+  comfortMessage: string;
+  timeAdvice: string;
   actionGuides: string[];
 }
 

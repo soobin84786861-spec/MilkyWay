@@ -95,6 +95,10 @@ public class RiskService {
     }
 
     private RiskLevel toRiskLevel(int percent) {
+
+        // 추후에 이 부분 지울 것
+        percent = (int) (Math.random() * 100);
+
         if (percent >= 75) return RiskLevel.CRITICAL;
         if (percent >= 50) return RiskLevel.DANGER;
         if (percent >= 25) return RiskLevel.CAUTION;

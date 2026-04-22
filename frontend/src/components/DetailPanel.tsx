@@ -28,11 +28,6 @@ const PTY: Record<number, { label: string; icon: string }> = {
   7: { label: '눈날림',       icon: '🌨️' },
 };
 
-const SEVERITY_STYLE = {
-  danger: { bg: 'bg-red-50 border-red-100', icon: '⚠️', text: 'text-red-700' },
-  warning: { bg: 'bg-red-50 border-red-100', icon: '⚠️', text: 'text-red-700' },
-  info: { bg: 'bg-amber-50 border-amber-100', icon: '💡', text: 'text-amber-700' },
-};
 
 export default function DetailPanel({ district, onClose }: Props) {
   const [aiData, setAiData] = useState<AiRiskAnalysisResponse | null>(null);
@@ -136,27 +131,6 @@ export default function DetailPanel({ district, onClose }: Props) {
               </div>
             </section>
 
-            {/* 행동 가이드 */}
-            <section>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2.5">
-                행동 가이드
-              </p>
-              <div className="space-y-2">
-                {district.actionGuides.map((guide, i) => {
-                  const style = SEVERITY_STYLE[guide.severity];
-                  return (
-                    <div
-                      key={i}
-                      className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border ${style.bg}`}
-                    >
-                      <span className="text-sm">{style.icon}</span>
-                      <span className={`text-sm font-medium ${style.text}`}>{guide.message}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-
             {/* AI 위험 분석 */}
             <section>
               <div className="flex items-center gap-1.5 mb-2.5">
@@ -165,34 +139,55 @@ export default function DetailPanel({ district, onClose }: Props) {
                   AI 위험 분석
                 </p>
               </div>
-              <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 min-h-[80px]">
-                {aiLoading && (
-                  <div className="flex items-center gap-2 text-amber-600 text-sm">
-                    <div className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
-                    <span>AI 분석 중...</span>
-                  </div>
-                )}
-                {aiError && !aiLoading && (
-                  <p className="text-sm text-slate-400">AI 분석을 불러오지 못했습니다.</p>
-                )}
-                {aiData && !aiLoading && (
-                  <>
-                    <p className="text-slate-700 text-sm leading-relaxed mb-3">
-                      {aiData.description}
+
+              {aiLoading && (
+                <div className="flex items-center gap-2 text-amber-600 text-sm px-1">
+                  <div className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+                  <span>AI 분석 중...</span>
+                </div>
+              )}
+              {aiError && !aiLoading && (
+                <p className="text-sm text-slate-400 px-1">AI 분석을 불러오지 못했습니다.</p>
+              )}
+              {aiData && !aiLoading && (
+                <div className="space-y-3">
+                  {/* 본문 */}
+                  <p className="text-slate-700 text-sm leading-relaxed">
+                    {aiData.description}
+                  </p>
+
+                  {/* 안심 메시지 */}
+                  <div className="flex items-start gap-2.5 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+                    <span className="text-base flex-shrink-0">😊</span>
+                    <p className="text-sm font-medium text-emerald-800 leading-relaxed">
+                      {aiData.comfortMessage}
                     </p>
-                    {aiData.actionGuides.length > 0 && (
-                      <ul className="space-y-1">
-                        {aiData.actionGuides.map((guide, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-slate-600 leading-relaxed">
-                            <span className="text-amber-500 flex-shrink-0">•</span>
-                            <span>{guide}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                )}
-              </div>
+                  </div>
+
+                  {/* 시간대별 조언 */}
+                  <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                    <span className="text-base flex-shrink-0">⏰</span>
+                    <p className="text-sm font-medium text-amber-800 leading-relaxed">
+                      {aiData.timeAdvice}
+                    </p>
+                  </div>
+
+                  {/* 행동 리스트 */}
+                  <div className="space-y-2">
+                    {aiData.actionGuides.map((guide, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2.5 px-4 py-2.5 rounded-xl border bg-slate-50 border-slate-100"
+                      >
+                        <span className="text-xs font-bold text-slate-400 flex-shrink-0 mt-0.5">
+                          {i + 1}
+                        </span>
+                        <span className="text-sm text-slate-700">{guide}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* 하단 여백 */}
