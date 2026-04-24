@@ -18,8 +18,8 @@ import java.util.Map;
 /**
  * 현재 시각 기준 자치구별 평균 통행량을 제공하는 서비스.
  *
- * <p>교통량 집계 결과는 1시간 동안 메모리에 캐시하고,
- * 캐시가 비었거나 만료됐을 때만 다시 계산한다.</p>
+ * <p>교통량 집계 결과를 1시간 동안 메모리에 캐시하고,
+ * 캐시가 비었거나 만료되었을 때만 다시 계산한다.</p>
  */
 @Slf4j
 @Service
@@ -31,7 +31,6 @@ public class TrafficService {
     private final TrafficFacadeService trafficFacadeService;
     private final TrafficCurrentSnapshotStore trafficCurrentSnapshotStore;
 
-
     /**
      * 특정 자치구의 현재 평균 통행량을 반환한다.
      */
@@ -40,6 +39,7 @@ public class TrafficService {
         return trafficCurrentSnapshotStore.getAverageTrafficByDistrict().getOrDefault(district, 0.0);
     }
 
+    /** 특정 자치구의 현재 교통량 정규화 점수(V 계산용)를 반환한다. */
     public double getCurrentTrafficScore(SeoulDistrict district) {
         ensureCurrentSnapshotLoaded();
         return trafficCurrentSnapshotStore.getTrafficScoreByDistrict().getOrDefault(district, 0.0);
@@ -73,21 +73,32 @@ public class TrafficService {
      * 현재 시각 기준 교통량 스냅샷을 다시 계산해 저장한다.
      */
     public List<DistrictTrafficAggregate> refreshCurrentTrafficSnapshot() {
+        long startedAt = System.currentTimeMillis();
         LocalDate today = LocalDate.now();
         int currentHour = LocalTime.now().minusHours(1).getHour();
+        log.info("[Traffic] 현재 시각 교통량 스냅샷 갱신 시작 - date={}, hour={}", today, currentHour);
+
         List<DistrictTrafficAggregate> aggregates = trafficFacadeService.getDistrictTrafficAggregates(today, currentHour);
         trafficCurrentSnapshotStore.update(aggregates);
-        log.info("[Traffic] 현재 시각 교통량 스냅샷 갱신 완료 - date={}, hour={}, districts={}",
-                today, currentHour, aggregates.size());
+
+        log.info(
+                "[Traffic] 현재 시각 교통량 스냅샷 갱신 완료 - date={}, hour={}, districts={}, elapsed={}ms",
+                today,
+                currentHour,
+                aggregates.size(),
+                System.currentTimeMillis() - startedAt
+        );
         return aggregates;
     }
 
+    /** 현재 스냅샷이 비었거나 만료되었으면 다시 집계한다. */
     private void ensureCurrentSnapshotLoaded() {
         if (trafficCurrentSnapshotStore.isEmpty() || isExpired(trafficCurrentSnapshotStore.getUpdatedAt())) {
             refreshCurrentTrafficSnapshot();
         }
     }
 
+    /** 마지막 갱신 시각이 1시간 TTL을 넘었는지 확인한다. */
     private boolean isExpired(LocalDateTime updatedAt) {
         if (updatedAt == null) {
             return true;
