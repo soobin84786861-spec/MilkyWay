@@ -22,7 +22,12 @@ public class RegionRiskResponse {
     private int instaCnt;
     private double temperature;
     private double humidity;
+    private double illumination;
     private SkyCondition sky;
     private PrecipitationType precipitationType;
     private double windSpeed;
+    private double weatherIndex;
+    private double habitatFactor;
+    private double trafficFactor;
+    private double riskIndex;
 }
