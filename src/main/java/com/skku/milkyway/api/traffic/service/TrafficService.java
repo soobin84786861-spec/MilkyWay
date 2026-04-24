@@ -40,6 +40,11 @@ public class TrafficService {
         return trafficCurrentSnapshotStore.getAverageTrafficByDistrict().getOrDefault(district, 0.0);
     }
 
+    public double getCurrentTrafficScore(SeoulDistrict district) {
+        ensureCurrentSnapshotLoaded();
+        return trafficCurrentSnapshotStore.getTrafficScoreByDistrict().getOrDefault(district, 0.0);
+    }
+
     /**
      * 모든 자치구의 현재 평균 통행량을 반환한다.
      */

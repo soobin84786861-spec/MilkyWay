@@ -18,18 +18,20 @@ public class TrafficCurrentSnapshotStore {
     private volatile LocalDateTime updatedAt;
     private volatile List<DistrictTrafficAggregate> aggregates = List.of();
     private volatile Map<SeoulDistrict, Double> averageTrafficByDistrict = Map.of();
+    private volatile Map<SeoulDistrict, Double> trafficScoreByDistrict = Map.of();
 
     public synchronized void update(List<DistrictTrafficAggregate> aggregates) {
         this.aggregates = List.copyOf(aggregates);
 
         Map<SeoulDistrict, Double> averages = new EnumMap<>(SeoulDistrict.class);
+        Map<SeoulDistrict, Double> scores = new EnumMap<>(SeoulDistrict.class);
         for (DistrictTrafficAggregate aggregate : aggregates) {
-            averages.put(
-                    SeoulDistrict.fromKoreanName(aggregate.getDistrictName()),
-                    aggregate.getAvgTrafficPerPoint()
-            );
+            SeoulDistrict district = SeoulDistrict.fromKoreanName(aggregate.getDistrictName());
+            averages.put(district, aggregate.getAvgTrafficPerPoint());
+            scores.put(district, aggregate.getNormalizedTrafficScore());
         }
         this.averageTrafficByDistrict = Map.copyOf(averages);
+        this.trafficScoreByDistrict = Map.copyOf(scores);
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -39,6 +41,10 @@ public class TrafficCurrentSnapshotStore {
 
     public Map<SeoulDistrict, Double> getAverageTrafficByDistrict() {
         return averageTrafficByDistrict;
+    }
+
+    public Map<SeoulDistrict, Double> getTrafficScoreByDistrict() {
+        return trafficScoreByDistrict;
     }
 
     public LocalDateTime getUpdatedAt() {

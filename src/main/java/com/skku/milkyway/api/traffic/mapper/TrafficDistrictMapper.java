@@ -43,8 +43,8 @@ public class TrafficDistrictMapper {
 
         try {
             Map<String, String> rawMappings = objectMapper.readValue(
-                    Path.of(trafficApiProperties.getMappingFilePath()).toFile(),
-                    new TypeReference<>() {}
+                Path.of(trafficApiProperties.getMappingFilePath()).toFile(),
+                new TypeReference<>() {}
             );
 
             Map<String, SeoulDistrict> result = new LinkedHashMap<>();
