@@ -13,22 +13,15 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 @Slf4j
 @Component
@@ -36,7 +29,6 @@ import java.util.Set;
 public class IlluminationApiClient {
 
     private static final String SENSING_TIME_FIELD = "sensing_time";
-    private static final Path DEBUG_CSV_PATH = Path.of("debug", "illumination-rows.csv");
     private static final DateTimeFormatter[] SENSING_TIME_FORMATTERS = new DateTimeFormatter[]{
             DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss"),
             DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"),
@@ -99,7 +91,6 @@ public class IlluminationApiClient {
             startIndex += batchSize;
         }
 
-        writeRowsToCsv(windowRows);
         log.info(
                 "[IlluminationAPI] 조도 API 조회 완료 - serviceName={}, rows={}, latestSensingTime={}, windowStart={}, elapsed={}ms",
                 properties.getServiceName(),
@@ -109,36 +100,6 @@ public class IlluminationApiClient {
                 System.currentTimeMillis() - startedAt
         );
         return windowRows;
-    }
-
-    /**
-     * 조회한 row를 확인용 CSV 파일로 저장한다.
-     */
-    private void writeRowsToCsv(List<Map<String, String>> rows) {
-        try {
-            Files.createDirectories(DEBUG_CSV_PATH.getParent());
-
-            Set<String> headers = new LinkedHashSet<>();
-            for (Map<String, String> row : rows) {
-                headers.addAll(row.keySet());
-            }
-
-            try (BufferedWriter writer = Files.newBufferedWriter(DEBUG_CSV_PATH, StandardCharsets.UTF_8)) {
-                writer.write(String.join(",", headers));
-                writer.newLine();
-
-                for (Map<String, String> row : rows) {
-                    List<String> values = new ArrayList<>();
-                    for (String header : headers) {
-                        values.add(escapeCsv(row.getOrDefault(header, "")));
-                    }
-                    writer.write(String.join(",", values));
-                    writer.newLine();
-                }
-            }
-        } catch (IOException e) {
-            log.warn("[IlluminationAPI] CSV 저장 실패 - {}", e.getMessage());
-        }
     }
 
     /**
@@ -286,17 +247,6 @@ public class IlluminationApiClient {
      */
     private String normalizeKey(String key) {
         return key == null ? "" : key.trim().toLowerCase(Locale.ROOT);
-    }
-
-    /**
-     * CSV 규칙에 맞게 값을 이스케이프한다.
-     */
-    private String escapeCsv(String value) {
-        String safe = value == null ? "" : value.replace("\"", "\"\"");
-        if (safe.contains(",") || safe.contains("\"") || safe.contains("\n")) {
-            return "\"" + safe + "\"";
-        }
-        return safe;
     }
 
     /**
