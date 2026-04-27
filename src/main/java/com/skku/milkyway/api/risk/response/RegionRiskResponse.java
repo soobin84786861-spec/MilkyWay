@@ -26,6 +26,10 @@ public class RegionRiskResponse {
     private SkyCondition sky;
     private PrecipitationType precipitationType;
     private double windSpeed;
+    private int temperatureScore;
+    private int humidityScore;
+    private int illuminationScore;
+    private int windScore;
     private double weatherIndex;
     private double habitatFactor;
     private double trafficFactor;

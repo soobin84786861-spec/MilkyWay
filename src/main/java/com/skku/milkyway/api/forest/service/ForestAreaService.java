@@ -49,6 +49,11 @@ public class ForestAreaService {
         return Math.max(0.0, Math.min(1.0, forestArea / maxForestArea));
     }
 
+    /** 서울시 자치구 중 최대 산림 면적 원본값을 반환한다. */
+    public double getMaxForestArea() {
+        return maxForestArea;
+    }
+
     /** 리소스 JSON을 읽어 enum 키 기준 자치구 산림면적 맵으로 변환한다. */
     private Map<SeoulDistrict, Double> loadForestAreaByDistrict() {
         try (InputStream inputStream = new ClassPathResource(RESOURCE_PATH).getInputStream()) {

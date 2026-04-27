@@ -153,7 +153,7 @@ export default function DetailPanel({ district, onClose }: Props) {
                 <div className="space-y-3">
                   {/* 본문 */}
                   <p className="text-slate-700 text-sm leading-relaxed">
-                    {aiData.description}
+                    {aiData.summary}
                   </p>
 
                   {/* 안심 메시지 */}
@@ -185,6 +185,50 @@ export default function DetailPanel({ district, onClose }: Props) {
                         <span className="text-sm text-slate-700">{guide}</span>
                       </div>
                     ))}
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                      핵심 요인
+                    </p>
+                    {aiData.riskFactors.map((factor, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-2.5 px-4 py-2.5 rounded-xl border bg-red-50 border-red-100"
+                      >
+                        <span className="text-xs font-bold text-red-400 flex-shrink-0 mt-0.5">
+                          {i + 1}
+                        </span>
+                        <span className="text-sm text-red-800">{factor}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                      분석 근거
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { label: '위험도', value: `${aiData.basedOn.riskPercent}%` },
+                        { label: '온도', value: `${aiData.basedOn.temperature}°C` },
+                        { label: '습도', value: `${aiData.basedOn.humidity}%` },
+                        { label: '조도', value: `${aiData.basedOn.illumination} lux` },
+                        { label: '풍속', value: `${aiData.basedOn.windSpeedMph} mph` },
+                        { label: '기상지수', value: aiData.basedOn.weatherIndex },
+                        { label: '서식지계수', value: aiData.basedOn.habitatFactor },
+                        { label: '교통계수', value: aiData.basedOn.trafficFactor },
+                        { label: 'LORR', value: aiData.basedOn.riskIndex },
+                      ].map(({ label, value }) => (
+                        <div
+                          key={label}
+                          className="bg-slate-50 rounded-xl px-3 py-2 border border-slate-100"
+                        >
+                          <p className="text-[11px] text-slate-400 mb-1">{label}</p>
+                          <p className="text-sm font-semibold text-slate-800">{value}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}

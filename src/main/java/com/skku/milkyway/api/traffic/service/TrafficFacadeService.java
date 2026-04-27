@@ -9,7 +9,6 @@ import com.skku.milkyway.api.traffic.domain.DistrictTrafficAggregate;
 import com.skku.milkyway.api.traffic.domain.TrafficMeasurement;
 import com.skku.milkyway.api.traffic.dto.TrafficHistoryRawDto;
 import com.skku.milkyway.api.traffic.mapper.TrafficDistrictMapper;
-import com.skku.milkyway.api.traffic.store.TrafficSnapshotStore;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,26 +36,23 @@ public class TrafficFacadeService {
     private final TrafficDistrictMapper trafficDistrictMapper;
     private final TrafficAggregationService trafficAggregationService;
     private final TrafficNormalizationService trafficNormalizationService;
-    private final TrafficSnapshotStore trafficSnapshotStore;
 
+    /**
+     * 지정한 날짜와 시간 기준으로 자치구별 교통량 집계를 계산한다.
+     */
     public List<DistrictTrafficAggregate> getDistrictTrafficAggregates(LocalDate date, Integer hour) {
         LocalDate targetDate = date != null ? date : LocalDate.now();
         int targetHour = hour != null ? hour : LocalTime.now().minusHours(1).getHour();
 
-        List<DistrictTrafficAggregate> cached = trafficSnapshotStore.get(targetDate, targetHour, properties.getCacheTtlMs());
-        if (cached != null) {
-            return cached;
-        }
-
         Map<String, SeoulDistrict> districtBySpotNum = trafficDistrictMapper.getDistrictBySpotNum();
         List<TrafficMeasurement> measurements = fetchMeasurements(districtBySpotNum.keySet(), targetDate, targetHour);
         List<DistrictTrafficAggregate> aggregated = trafficAggregationService.aggregate(districtBySpotNum, measurements);
-        List<DistrictTrafficAggregate> normalized = trafficNormalizationService.normalize(aggregated);
-
-        trafficSnapshotStore.put(targetDate, targetHour, normalized);
-        return normalized;
+        return trafficNormalizationService.normalize(aggregated);
     }
 
+    /**
+     * 모든 지점의 교통량 이력 데이터를 조회해 측정값 목록으로 변환한다.
+     */
     private List<TrafficMeasurement> fetchMeasurements(Iterable<String> pointIds, LocalDate date, int hour) {
         List<TrafficMeasurement> measurements = new ArrayList<>();
         for (String pointId : pointIds) {
@@ -70,6 +66,9 @@ public class TrafficFacadeService {
         return measurements;
     }
 
+    /**
+     * 원본 이력 row를 교통량 측정값 도메인으로 변환한다.
+     */
     private List<TrafficMeasurement> mapMeasurements(List<TrafficHistoryRawDto> rawHistories) {
         if (rawHistories == null || rawHistories.isEmpty()) {
             return Collections.emptyList();
@@ -96,6 +95,9 @@ public class TrafficFacadeService {
         return result;
     }
 
+    /**
+     * 원본 필드명을 비교하기 쉬운 형태로 정규화한다.
+     */
     private Map<String, String> normalizeFields(Map<String, String> fields) {
         Map<String, String> normalized = new LinkedHashMap<>();
         for (Map.Entry<String, String> entry : fields.entrySet()) {
@@ -104,6 +106,9 @@ public class TrafficFacadeService {
         return normalized;
     }
 
+    /**
+     * 여러 후보 필드명 중 실제 값이 있는 필드를 찾아 반환한다.
+     */
     private String getField(Map<String, String> fields, String... candidates) {
         for (String candidate : candidates) {
             String value = fields.get(normalizeKey(candidate));
@@ -114,6 +119,9 @@ public class TrafficFacadeService {
         return null;
     }
 
+    /**
+     * 숫자 문자열을 long으로 변환하고 실패하면 -1을 반환한다.
+     */
     private long parseLong(String value) {
         try {
             return value != null && !value.isBlank() ? Long.parseLong(value.trim()) : -1L;
@@ -122,6 +130,9 @@ public class TrafficFacadeService {
         }
     }
 
+    /**
+     * 필드명을 비교용 문자열로 정규화한다.
+     */
     private String normalizeKey(String key) {
         return key == null ? "" : key.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9가-힣]", "");
     }

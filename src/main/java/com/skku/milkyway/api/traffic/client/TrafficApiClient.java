@@ -85,7 +85,6 @@ public class TrafficApiClient {
             startIndex += batchSize;
         }
 
-        log.info("[TrafficAPI] {} 조회 완료 - {}건", serviceName, allRows.size());
         return allRows;
     }
 

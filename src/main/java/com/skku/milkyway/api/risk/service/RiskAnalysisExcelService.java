@@ -34,17 +34,20 @@ public class RiskAnalysisExcelService {
             LocalDateTime generatedAt,
             List<RegionRiskResponse> regions,
             Map<SeoulDistrict, Double> habitatRatioByDistrict,
-            Map<SeoulDistrict, Double> trafficScoreByDistrict
+            Map<SeoulDistrict, Double> trafficScoreByDistrict,
+            double maxForestArea,
+            Map<SeoulDistrict, Double> trafficAverageByDistrict
     ) {
         try {
             Files.createDirectories(OUTPUT_PATH.getParent());
 
             try (XSSFWorkbook workbook = new XSSFWorkbook();
-                 OutputStream outputStream = Files.newOutputStream(OUTPUT_PATH)) {
+                OutputStream outputStream = Files.newOutputStream(OUTPUT_PATH)) {
                 Sheet sheet = workbook.createSheet("risk-analysis");
-                writeHeader(sheet);
-                writeRows(sheet, generatedAt, regions, habitatRatioByDistrict, trafficScoreByDistrict);
-                autoSizeColumns(sheet, 25);
+                writeSummary(sheet, generatedAt, maxForestArea, trafficAverageByDistrict);
+                writeHeader(sheet, 4);
+                writeRows(sheet, generatedAt, regions, habitatRatioByDistrict, trafficScoreByDistrict, maxForestArea, trafficAverageByDistrict, 5);
+                autoSizeColumns(sheet, 27);
                 workbook.write(outputStream);
             }
 
@@ -57,8 +60,35 @@ public class RiskAnalysisExcelService {
     /**
      * 엑셀 컬럼 헤더를 작성한다.
      */
-    private void writeHeader(Sheet sheet) {
-        Row header = sheet.createRow(0);
+    private void writeSummary(
+            Sheet sheet,
+            LocalDateTime generatedAt,
+            double maxForestArea,
+            Map<SeoulDistrict, Double> trafficAverageByDistrict
+    ) {
+        double maxTrafficAverage = trafficAverageByDistrict.values().stream()
+                .mapToDouble(Double::doubleValue)
+                .max()
+                .orElse(0.0);
+
+        Row row0 = sheet.createRow(0);
+        row0.createCell(0).setCellValue("\uC0DD\uC131\uC2DC\uAC01");
+        row0.createCell(1).setCellValue(generatedAt.format(DATE_TIME_FORMATTER));
+
+        Row row1 = sheet.createRow(1);
+        row1.createCell(0).setCellValue("\uC11C\uC6B8\uC2DC \uC790\uCE58\uAD6C \uC911 \uCD5C\uB300 \uC0B0\uB9BC \uBA74\uC801");
+        row1.createCell(1).setCellValue(maxForestArea);
+
+        Row row2 = sheet.createRow(2);
+        row2.createCell(0).setCellValue("\uC11C\uC6B8\uC2DC \uC790\uCE58\uAD6C \uC911 \uCD5C\uB300 \uAD50\uD1B5\uB7C9(\uD3C9\uADE0)");
+        row2.createCell(1).setCellValue(maxTrafficAverage);
+    }
+
+    /**
+     * 엑셀 컬럼 헤더를 작성한다.
+     */
+    private void writeHeader(Sheet sheet, int rowIndex) {
+        Row header = sheet.createRow(rowIndex);
         String[] columns = {
                 "\uC0DD\uC131\uC2DC\uAC01",
                 "\uC790\uCE58\uAD6C\uCF54\uB4DC",
@@ -76,8 +106,10 @@ public class RiskAnalysisExcelService {
                 "\uD48D\uC18D(mph)",
                 "\uD48D\uC18D\uC810\uC218",
                 "\uAE30\uC0C1\uC9C0\uC218(W)",
+                "\uC0B0\uB9BC\uBA74\uC801",
                 "\uC0B0\uB9BC\uBE44\uC728",
                 "\uC11C\uC2DD\uC9C0\uACC4\uC218(G)",
+                "\uAD50\uD1B5\uD3C9\uADE0",
                 "\uAD50\uD1B5\uC810\uC218",
                 "\uAD50\uD1B5\uACC4\uC218(V)",
                 "\uCD5C\uC885\uC704\uD5D8\uC9C0\uC218(LORR)",
@@ -100,14 +132,19 @@ public class RiskAnalysisExcelService {
             LocalDateTime generatedAt,
             List<RegionRiskResponse> regions,
             Map<SeoulDistrict, Double> habitatRatioByDistrict,
-            Map<SeoulDistrict, Double> trafficScoreByDistrict
+            Map<SeoulDistrict, Double> trafficScoreByDistrict,
+            double maxForestArea,
+            Map<SeoulDistrict, Double> trafficAverageByDistrict,
+            int startRowIndex
     ) {
-        int rowIndex = 1;
+        int rowIndex = startRowIndex;
         String generatedAtText = generatedAt.format(DATE_TIME_FORMATTER);
 
         for (RegionRiskResponse region : regions) {
             SeoulDistrict district = SeoulDistrict.valueOf(region.getDistrictCode());
             double forestRatio = habitatRatioByDistrict.getOrDefault(district, 0.0);
+            double forestArea = forestRatio * maxForestArea;
+            double trafficAverage = trafficAverageByDistrict.getOrDefault(district, 0.0);
             double trafficScore = trafficScoreByDistrict.getOrDefault(district, 0.0);
 
             ExportRow exportRow = ExportRow.builder()
@@ -127,8 +164,10 @@ public class RiskAnalysisExcelService {
                     .windSpeed(toMph(region.getWindSpeed()))
                     .windScore(region.getWindScore())
                     .weatherIndex(region.getWeatherIndex())
+                    .forestArea(forestArea)
                     .forestRatio(forestRatio)
                     .habitatFactor(region.getHabitatFactor())
+                    .trafficAverage(trafficAverage)
                     .trafficScore(trafficScore)
                     .trafficFactor(region.getTrafficFactor())
                     .riskIndex(region.getRiskIndex())
@@ -155,15 +194,17 @@ public class RiskAnalysisExcelService {
             writeCell(row, 13, exportRow.windSpeed());
             writeCell(row, 14, exportRow.windScore());
             writeCell(row, 15, exportRow.weatherIndex());
-            writeCell(row, 16, exportRow.forestRatio());
-            writeCell(row, 17, exportRow.habitatFactor());
-            writeCell(row, 18, exportRow.trafficScore());
-            writeCell(row, 19, exportRow.trafficFactor());
-            writeCell(row, 20, exportRow.riskIndex());
-            writeCell(row, 21, exportRow.instaCnt());
-            writeCell(row, 22, exportRow.latitude());
-            writeCell(row, 23, exportRow.longitude());
-            writeCell(row, 24, exportRow.memo());
+            writeCell(row, 16, exportRow.forestArea());
+            writeCell(row, 17, exportRow.forestRatio());
+            writeCell(row, 18, exportRow.habitatFactor());
+            writeCell(row, 19, exportRow.trafficAverage());
+            writeCell(row, 20, exportRow.trafficScore());
+            writeCell(row, 21, exportRow.trafficFactor());
+            writeCell(row, 22, exportRow.riskIndex());
+            writeCell(row, 23, exportRow.instaCnt());
+            writeCell(row, 24, exportRow.latitude());
+            writeCell(row, 25, exportRow.longitude());
+            writeCell(row, 26, exportRow.memo());
         }
     }
 
@@ -229,8 +270,10 @@ public class RiskAnalysisExcelService {
             double windSpeed,
             int windScore,
             double weatherIndex,
+            double forestArea,
             double forestRatio,
             double habitatFactor,
+            double trafficAverage,
             double trafficScore,
             double trafficFactor,
             double riskIndex,

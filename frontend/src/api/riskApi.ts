@@ -16,10 +16,22 @@ export interface RegionRiskResponse {
 }
 
 export interface AiRiskAnalysisResponse {
-  description: string;
+  summary: string;
   comfortMessage: string;
   timeAdvice: string;
   actionGuides: string[];
+  riskFactors: string[];
+  basedOn: {
+    riskPercent: number;
+    temperature: number;
+    humidity: number;
+    illumination: number;
+    windSpeedMph: number;
+    weatherIndex: number;
+    habitatFactor: number;
+    trafficFactor: number;
+    riskIndex: number;
+  };
 }
 
 const FILTER_PARAM: Partial<Record<RiskFilterType, RiskLevel>> = {
@@ -37,7 +49,7 @@ export async function fetchRegions(riskFilter: RiskFilterType): Promise<RegionRi
 }
 
 export async function fetchAiRiskAnalysis(districtCode: string): Promise<AiRiskAnalysisResponse> {
-  const res = await fetch(`/api/ai/risk-analysis?district=${districtCode}`);
-  if (!res.ok) throw new Error(`AI API ${res.status}`);
+  const res = await fetch(`/api/risk/regions/${districtCode}`);
+  if (!res.ok) throw new Error(`Risk Analysis API ${res.status}`);
   return res.json();
 }

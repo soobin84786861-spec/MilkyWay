@@ -27,9 +27,9 @@ public class AiRiskAnalysisService {
     private static final String SYSTEM_PROMPT_PATH = "prompts/ai-risk-system.st";
     private static final String USER_PROMPT_PATH = "prompts/ai-risk-user.st";
     private static final List<TimeAdviceContext> TIME_ADVICE_CONTEXTS = List.of(
-            new TimeAdviceContext(5, 10, "출근·등교 이동 시간대", "대중교통 대기, 도보 이동, 횡단보도 대기처럼 야외 체류가 잦은 시간대"),
-            new TimeAdviceContext(10, 17, "주간 야외활동 시간대", "공원, 산책로, 골목길, 캠퍼스처럼 야외 이동과 체류가 이어지는 시간대"),
-            new TimeAdviceContext(17, 22, "퇴근·저녁 야외활동 시간대", "조명 주변 체류와 저녁 산책, 귀가 동선 노출이 늘어나는 시간대"),
+            new TimeAdviceContext(5, 10, "출근·등교 이동 시간대", "대중교통 대기, 버스정류장 이동, 횡단보도 대기처럼 야외 체류가 있는 시간대"),
+            new TimeAdviceContext(10, 17, "주간 야외활동 시간대", "공원, 산책로, 도심 골목 이동처럼 야외 이동과 체류가 이어지는 시간대"),
+            new TimeAdviceContext(17, 22, "퇴근 이후 야외활동 시간대", "조명 주변 체류와 도보 이동이 늘어나는 시간대"),
             new TimeAdviceContext(22, 24, "야간 실내관리 시간대", "귀가 후 환기, 창문 개방, 실내 유입 관리가 중요한 시간대"),
             new TimeAdviceContext(0, 5, "야간 실내관리 시간대", "귀가 후 환기, 창문 개방, 실내 유입 관리가 중요한 시간대")
     );
@@ -71,7 +71,7 @@ public class AiRiskAnalysisService {
                         {
                           "type": "object",
                           "properties": {
-                            "description": { "type": "string" },
+                            "summary": { "type": "string" },
                             "comfortMessage": { "type": "string" },
                             "timeAdvice": { "type": "string" },
                             "actionGuides": {
@@ -79,22 +79,50 @@ public class AiRiskAnalysisService {
                               "items": { "type": "string" },
                               "minItems": 3,
                               "maxItems": 3
+                            },
+                            "riskFactors": {
+                              "type": "array",
+                              "items": { "type": "string" },
+                              "minItems": 3,
+                              "maxItems": 3
+                            },
+                            "basedOn": {
+                              "type": "object",
+                              "properties": {
+                                "riskPercent": { "type": "integer" },
+                                "temperature": { "type": "number" },
+                                "humidity": { "type": "number" },
+                                "illumination": { "type": "number" },
+                                "windSpeedMph": { "type": "number" },
+                                "weatherIndex": { "type": "number" },
+                                "habitatFactor": { "type": "number" },
+                                "trafficFactor": { "type": "number" },
+                                "riskIndex": { "type": "number" }
+                              },
+                              "required": ["riskPercent", "temperature", "humidity", "illumination", "windSpeedMph", "weatherIndex", "habitatFactor", "trafficFactor", "riskIndex"],
+                              "additionalProperties": false
                             }
                           },
-                          "required": ["description", "comfortMessage", "timeAdvice", "actionGuides"],
+                          "required": ["summary", "comfortMessage", "timeAdvice", "actionGuides", "riskFactors", "basedOn"],
                           "additionalProperties": false
                         }
                         """
         ));
-        String userPrompt = renderTemplate(USER_PROMPT_PATH, Map.of(
-                "district", district.getKoreanName(),
-                "riskPercent", region.getRiskPercent(),
-                "riskLevel", region.getRiskLevel().getKoreanName(),
-                "temperature", region.getTemperature(),
-                "humidity", region.getHumidity(),
-                "instaCnt", region.getInstaCnt(),
-                "timeSlotLabel", timeAdviceContext.label(),
-                "timeAdviceSeed", timeAdviceContext.seed()
+        String userPrompt = renderTemplate(USER_PROMPT_PATH, Map.ofEntries(
+                Map.entry("district", district.getKoreanName()),
+                Map.entry("riskPercent", region.getRiskPercent()),
+                Map.entry("riskLevel", region.getRiskLevel().getKoreanName()),
+                Map.entry("temperature", region.getTemperature()),
+                Map.entry("humidity", region.getHumidity()),
+                Map.entry("illumination", region.getIllumination()),
+                Map.entry("windSpeedMph", round(toMph(region.getWindSpeed()))),
+                Map.entry("weatherIndex", region.getWeatherIndex()),
+                Map.entry("habitatFactor", region.getHabitatFactor()),
+                Map.entry("trafficFactor", region.getTrafficFactor()),
+                Map.entry("riskIndex", region.getRiskIndex()),
+                Map.entry("instaCnt", region.getInstaCnt()),
+                Map.entry("timeSlotLabel", timeAdviceContext.label()),
+                Map.entry("timeAdviceSeed", timeAdviceContext.seed())
         ));
 
         AiRiskAnalysisResponse result;
@@ -107,7 +135,7 @@ public class AiRiskAnalysisService {
                     .entity(AiRiskAnalysisResponse.class);
         } catch (RuntimeException e) {
             log.error("[AI] 구조화 응답 변환 실패 - {}", district, e);
-            result = fallbackResponse();
+            result = fallbackResponse(region);
         }
 
         cache.put(district, new CachedEntry(result, System.currentTimeMillis()));
@@ -127,7 +155,6 @@ public class AiRiskAnalysisService {
     private String renderTemplate(String path, Map<String, Object> attributes) {
         try {
             String template = new ClassPathResource(path).getContentAsString(StandardCharsets.UTF_8);
-
             ST st = new ST(template, '<', '>');
             attributes.forEach(st::add);
             return st.render();
@@ -136,16 +163,40 @@ public class AiRiskAnalysisService {
         }
     }
 
-    private AiRiskAnalysisResponse fallbackResponse() {
+    private AiRiskAnalysisResponse fallbackResponse(RegionRiskResponse region) {
         return new AiRiskAnalysisResponse(
-                "현재 위험도 데이터를 바탕으로 러브버그 노출 가능성이 있어 주의가 필요합니다.",
-                "오늘도 너무 걱정하지 말고, 필요한 만큼만 가볍게 대비해보세요.",
-                "현재 시간대에는 야외 이동 동선과 실내 유입 가능성을 함께 살펴보세요.",
+                "현재 " + region.getRegionName() + "은 러브버그 노출 가능성이 있어 주의가 필요한 상태입니다.",
+                "너무 걱정하지 말고, 필요한 만큼만 대비해도 충분합니다.",
+                "현재 시간대에는 야외 조명 주변 체류와 실내 유입 가능성을 함께 확인해보세요.",
                 List.of(
-                        "외출 전 방충망과 창문 틈새를 먼저 확인하세요.",
-                        "야외 이동 중에는 조명 주변에 오래 머무르지 마세요.",
-                        "귀가 후에는 옷과 소지품을 털어 실내 유입을 줄이세요."
+                        "창문과 방충망 상태를 먼저 확인하세요.",
+                        "밝은 조명 주변 야외 체류 시간을 줄이세요.",
+                        "귀가 후 의류와 차량 표면을 점검하세요."
+                ),
+                List.of(
+                        "현재 기온과 습도 조건이 활동 가능성에 영향을 줍니다.",
+                        "조도와 풍속 조건이 러브버그 이동과 유인에 반영됩니다.",
+                        "서식지 계수와 교통 계수가 지역 위험도에 함께 반영됩니다."
+                ),
+                new AiRiskAnalysisResponse.BasedOn(
+                        region.getRiskPercent(),
+                        region.getTemperature(),
+                        region.getHumidity(),
+                        region.getIllumination(),
+                        round(toMph(region.getWindSpeed())),
+                        region.getWeatherIndex(),
+                        region.getHabitatFactor(),
+                        region.getTrafficFactor(),
+                        region.getRiskIndex()
                 )
         );
+    }
+
+    private double toMph(double metersPerSecond) {
+        return metersPerSecond * 2.23694;
+    }
+
+    private double round(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }
