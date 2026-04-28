@@ -143,7 +143,7 @@ export default function App() {
 
         {cctvViewer && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/45 backdrop-blur-[2px] p-6">
-            <div className="w-full max-w-4xl h-[80vh] flex flex-col rounded-[24px] bg-white shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="w-full max-w-4xl h-[72vh] flex flex-col rounded-[24px] bg-white shadow-2xl border border-slate-200 overflow-hidden">
               <div className="flex shrink-0 items-center justify-between px-5 py-3 border-b border-slate-100 bg-white">
                 <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
