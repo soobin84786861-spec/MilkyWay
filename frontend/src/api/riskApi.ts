@@ -35,9 +35,9 @@ export interface AiRiskAnalysisResponse {
 }
 
 const FILTER_PARAM: Partial<Record<RiskFilterType, RiskLevel>> = {
-  '주의': 'CAUTION',
-  '위험': 'DANGER',
-  '매우위험': 'CRITICAL',
+  '\uC8FC\uC758': 'CAUTION',
+  '\uC704\uD5D8': 'DANGER',
+  '\uB9E4\uC6B0\uC704\uD5D8': 'CRITICAL',
 };
 
 export async function fetchRegions(riskFilter: RiskFilterType): Promise<RegionRiskResponse[]> {
