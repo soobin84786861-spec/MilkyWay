@@ -26,6 +26,14 @@ public class AiRiskAnalysisService {
     private static final long CACHE_TTL_MS = 60 * 60 * 1000L;
     private static final String SYSTEM_PROMPT_PATH = "prompts/ai-risk-system.st";
     private static final String USER_PROMPT_PATH = "prompts/ai-risk-user.st";
+    private static final List<LifeStageContext> LIFE_STAGE_CONTEXTS = List.of(
+            new LifeStageContext(1, 6, "알·유충기",
+                    "현재는 러브버그가 알 또는 유충 상태로 토양 속에서 성장하는 시기다. 성충은 6월 중순 이후부터 지상에 출몰하기 시작한다. 위험 지수는 환경 조건의 잠재력을 나타내며, 실제 성충 출몰은 아직 이르다."),
+            new LifeStageContext(6, 8, "성충 활동기",
+                    "현재는 러브버그 성충이 우화하여 지상에서 활발하게 활동하는 시기다. 기온, 습도, 조도 조건에 따라 실질적인 출몰 위험이 존재한다."),
+            new LifeStageContext(9, 12, "알·유충기",
+                    "현재는 러브버그 성충 활동이 거의 종료되고 알·유충 단계로 접어드는 시기다. 당분간 성충 출몰 위험은 낮다.")
+    );
     private static final List<TimeAdviceContext> TIME_ADVICE_CONTEXTS = List.of(
             new TimeAdviceContext(5, 10, "출근·등교 이동 시간대", "대중교통 대기, 버스정류장 이동, 횡단보도 대기처럼 야외 체류가 있는 시간대"),
             new TimeAdviceContext(10, 17, "주간 야외활동 시간대", "공원, 산책로, 도심 골목 이동처럼 야외 이동과 체류가 이어지는 시간대"),
@@ -37,6 +45,12 @@ public class AiRiskAnalysisService {
     private record CachedEntry(AiRiskAnalysisResponse data, long timestamp) {
         boolean isExpired() {
             return System.currentTimeMillis() - timestamp > CACHE_TTL_MS;
+        }
+    }
+
+    private record LifeStageContext(int startMonthInclusive, int endMonthInclusive, String label, String context) {
+        boolean matches(int month) {
+            return month >= startMonthInclusive && month <= endMonthInclusive;
         }
     }
 
@@ -66,6 +80,7 @@ public class AiRiskAnalysisService {
 
         RegionRiskResponse region = riskService.getRegion(district);
         TimeAdviceContext timeAdviceContext = resolveTimeAdviceContext(LocalTime.now());
+        LifeStageContext lifeStageContext = resolveLifeStageContext(java.time.LocalDate.now().getMonthValue());
         String systemPrompt = renderTemplate(SYSTEM_PROMPT_PATH, Map.of(
                 "jsonSchema", """
                         {
@@ -122,7 +137,10 @@ public class AiRiskAnalysisService {
                 Map.entry("riskIndex", region.getRiskIndex()),
                 Map.entry("instaCnt", region.getInstaCnt()),
                 Map.entry("timeSlotLabel", timeAdviceContext.label()),
-                Map.entry("timeAdviceSeed", timeAdviceContext.seed())
+                Map.entry("timeAdviceSeed", timeAdviceContext.seed()),
+                Map.entry("currentMonth", java.time.LocalDate.now().getMonthValue()),
+                Map.entry("lifeStage", lifeStageContext.label()),
+                Map.entry("lifeStageContext", lifeStageContext.context())
         ));
 
         AiRiskAnalysisResponse result;
@@ -140,6 +158,13 @@ public class AiRiskAnalysisService {
 
         cache.put(district, new CachedEntry(result, System.currentTimeMillis()));
         return result;
+    }
+
+    private LifeStageContext resolveLifeStageContext(int month) {
+        return LIFE_STAGE_CONTEXTS.stream()
+                .filter(context -> context.matches(month))
+                .findFirst()
+                .orElse(LIFE_STAGE_CONTEXTS.get(0));
     }
 
     private TimeAdviceContext resolveTimeAdviceContext(LocalTime currentTime) {
