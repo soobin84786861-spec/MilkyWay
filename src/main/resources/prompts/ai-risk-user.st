@@ -14,6 +14,9 @@
 - 인스타그램 언급 수: <instaCnt>건
 - 현재 시간대: <timeSlotLabel>
 - 시간대 특성: <timeAdviceSeed>
+- 현재 월: <currentMonth>월
+- 러브버그 생애주기 단계: <lifeStage>
+- 생애주기 맥락: <lifeStageContext>
 
 작성 조건:
 - `summary`는 현재 위험 상태를 직관적으로 설명해줘.
