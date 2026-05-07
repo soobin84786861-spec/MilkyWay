@@ -1,0 +1,1119 @@
+{
+  "description": "2023~2025 과거 데이터를 바탕으로 계산한 월-일 기준 위험도 가중치",
+  "formula": {
+    "environment_score": "RiskService 기반 환경 점수(기온/습도/조도/풍속/교통/서식지)",
+    "sns_score": "sns_x_cnt + sns_instagram_cnt + sns_youtube_cnt + sns_naver_cnt",
+    "total_score_raw": "environment_score * 0.3 + sns_score * 0.7",
+    "seasonal_weight": "total_score_raw / max(total_score_raw)",
+    "season_grade": "A: seasonal_weight >= 0.4, B: 0.25 <= seasonal_weight < 0.4, C: seasonal_weight < 0.25"
+  },
+  "records": [
+    {
+      "month": 5,
+      "day": 1,
+      "environment_score": 82.1767,
+      "sns_score": 2,
+      "total_score_raw": 25.8197,
+      "seasonal_weight": 0.1905,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 2,
+      "environment_score": 99.751,
+      "sns_score": 0,
+      "total_score_raw": 30.1586,
+      "seasonal_weight": 0.2225,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 3,
+      "environment_score": 98.3823,
+      "sns_score": 0,
+      "total_score_raw": 29.748,
+      "seasonal_weight": 0.2194,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 4,
+      "environment_score": 92.9377,
+      "sns_score": 0,
+      "total_score_raw": 28.1146,
+      "seasonal_weight": 0.2074,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 5,
+      "environment_score": 72.271,
+      "sns_score": 1,
+      "total_score_raw": 22.6146,
+      "seasonal_weight": 0.1668,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 6,
+      "environment_score": 77.4077,
+      "sns_score": 3,
+      "total_score_raw": 25.5556,
+      "seasonal_weight": 0.1885,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 7,
+      "environment_score": 93.5843,
+      "sns_score": 1,
+      "total_score_raw": 28.542,
+      "seasonal_weight": 0.2105,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 8,
+      "environment_score": 100.0,
+      "sns_score": 0,
+      "total_score_raw": 30.2333,
+      "seasonal_weight": 0.223,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 9,
+      "environment_score": 99.0,
+      "sns_score": 0,
+      "total_score_raw": 29.9333,
+      "seasonal_weight": 0.2208,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 10,
+      "environment_score": 94.431,
+      "sns_score": 0,
+      "total_score_raw": 28.5626,
+      "seasonal_weight": 0.2107,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 11,
+      "environment_score": 90.9157,
+      "sns_score": 0,
+      "total_score_raw": 27.508,
+      "seasonal_weight": 0.2029,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 12,
+      "environment_score": 92.002,
+      "sns_score": 0,
+      "total_score_raw": 27.8339,
+      "seasonal_weight": 0.2053,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 13,
+      "environment_score": 100.0,
+      "sns_score": 1,
+      "total_score_raw": 30.4667,
+      "seasonal_weight": 0.2247,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 14,
+      "environment_score": 93.8477,
+      "sns_score": 4,
+      "total_score_raw": 31.1876,
+      "seasonal_weight": 0.23,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 15,
+      "environment_score": 92.4143,
+      "sns_score": 2,
+      "total_score_raw": 28.891,
+      "seasonal_weight": 0.2131,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 16,
+      "environment_score": 94.6077,
+      "sns_score": 3,
+      "total_score_raw": 30.249,
+      "seasonal_weight": 0.2231,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 17,
+      "environment_score": 92.28,
+      "sns_score": 2,
+      "total_score_raw": 29.3173,
+      "seasonal_weight": 0.2163,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 18,
+      "environment_score": 87.5443,
+      "sns_score": 0,
+      "total_score_raw": 26.4966,
+      "seasonal_weight": 0.1954,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 19,
+      "environment_score": 88.6057,
+      "sns_score": 0,
+      "total_score_raw": 26.5817,
+      "seasonal_weight": 0.1961,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 20,
+      "environment_score": 95.071,
+      "sns_score": 1,
+      "total_score_raw": 28.988,
+      "seasonal_weight": 0.2138,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 21,
+      "environment_score": 93.3043,
+      "sns_score": 0,
+      "total_score_raw": 27.9913,
+      "seasonal_weight": 0.2065,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 22,
+      "environment_score": 96.7523,
+      "sns_score": 1,
+      "total_score_raw": 29.4924,
+      "seasonal_weight": 0.2175,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 23,
+      "environment_score": 98.3257,
+      "sns_score": 1,
+      "total_score_raw": 30.1977,
+      "seasonal_weight": 0.2227,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 24,
+      "environment_score": 93.901,
+      "sns_score": 0,
+      "total_score_raw": 28.1703,
+      "seasonal_weight": 0.2078,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 25,
+      "environment_score": 87.4643,
+      "sns_score": 0,
+      "total_score_raw": 26.4726,
+      "seasonal_weight": 0.1953,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 26,
+      "environment_score": 96.2277,
+      "sns_score": 1,
+      "total_score_raw": 29.335,
+      "seasonal_weight": 0.2164,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 27,
+      "environment_score": 96.3543,
+      "sns_score": 1,
+      "total_score_raw": 29.373,
+      "seasonal_weight": 0.2167,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 28,
+      "environment_score": 89.731,
+      "sns_score": 1,
+      "total_score_raw": 27.8526,
+      "seasonal_weight": 0.2054,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 29,
+      "environment_score": 95.9933,
+      "sns_score": 2,
+      "total_score_raw": 30.198,
+      "seasonal_weight": 0.2227,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 30,
+      "environment_score": 100.0,
+      "sns_score": 0,
+      "total_score_raw": 30.2333,
+      "seasonal_weight": 0.223,
+      "season_grade": "C"
+    },
+    {
+      "month": 5,
+      "day": 31,
+      "environment_score": 100.0,
+      "sns_score": 0,
+      "total_score_raw": 30.0,
+      "seasonal_weight": 0.2213,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 1,
+      "environment_score": 94.0143,
+      "sns_score": 0,
+      "total_score_raw": 28.2043,
+      "seasonal_weight": 0.208,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 2,
+      "environment_score": 94.849,
+      "sns_score": 0,
+      "total_score_raw": 28.688,
+      "seasonal_weight": 0.2116,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 3,
+      "environment_score": 93.4557,
+      "sns_score": 1,
+      "total_score_raw": 28.7367,
+      "seasonal_weight": 0.212,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 4,
+      "environment_score": 94.6757,
+      "sns_score": 0,
+      "total_score_raw": 28.636,
+      "seasonal_weight": 0.2112,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 5,
+      "environment_score": 89.6,
+      "sns_score": 0,
+      "total_score_raw": 27.1133,
+      "seasonal_weight": 0.2,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 6,
+      "environment_score": 92.5823,
+      "sns_score": 0,
+      "total_score_raw": 28.008,
+      "seasonal_weight": 0.2066,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 7,
+      "environment_score": 97.2833,
+      "sns_score": 0,
+      "total_score_raw": 29.185,
+      "seasonal_weight": 0.2153,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 8,
+      "environment_score": 95.9167,
+      "sns_score": 0,
+      "total_score_raw": 29.0083,
+      "seasonal_weight": 0.214,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 9,
+      "environment_score": 95.1077,
+      "sns_score": 0,
+      "total_score_raw": 28.7656,
+      "seasonal_weight": 0.2122,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 10,
+      "environment_score": 100.0,
+      "sns_score": 1,
+      "total_score_raw": 30.7,
+      "seasonal_weight": 0.2265,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 11,
+      "environment_score": 94.8877,
+      "sns_score": 1,
+      "total_score_raw": 29.1663,
+      "seasonal_weight": 0.2151,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 12,
+      "environment_score": 100.0,
+      "sns_score": 1,
+      "total_score_raw": 30.7,
+      "seasonal_weight": 0.2265,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 13,
+      "environment_score": 100.0,
+      "sns_score": 0,
+      "total_score_raw": 30.0,
+      "seasonal_weight": 0.2213,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 14,
+      "environment_score": 100.0,
+      "sns_score": 1,
+      "total_score_raw": 30.9333,
+      "seasonal_weight": 0.2282,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 15,
+      "environment_score": 97.8557,
+      "sns_score": 1,
+      "total_score_raw": 29.8234,
+      "seasonal_weight": 0.22,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 16,
+      "environment_score": 85.8267,
+      "sns_score": 8,
+      "total_score_raw": 31.1147,
+      "seasonal_weight": 0.2295,
+      "season_grade": "C"
+    },
+    {
+      "month": 6,
+      "day": 17,
+      "environment_score": 100.0,
+      "sns_score": 17,
+      "total_score_raw": 41.9,
+      "seasonal_weight": 0.3091,
+      "season_grade": "B"
+    },
+    {
+      "month": 6,
+      "day": 18,
+      "environment_score": 96.69,
+      "sns_score": 28,
+      "total_score_raw": 48.3737,
+      "seasonal_weight": 0.3568,
+      "season_grade": "B"
+    },
+    {
+      "month": 6,
+      "day": 19,
+      "environment_score": 100.0,
+      "sns_score": 28,
+      "total_score_raw": 49.6,
+      "seasonal_weight": 0.3659,
+      "season_grade": "B"
+    },
+    {
+      "month": 6,
+      "day": 20,
+      "environment_score": 100.0,
+      "sns_score": 39,
+      "total_score_raw": 57.0667,
+      "seasonal_weight": 0.4209,
+      "season_grade": "A"
+    },
+    {
+      "month": 6,
+      "day": 21,
+      "environment_score": 100.0,
+      "sns_score": 33,
+      "total_score_raw": 53.1,
+      "seasonal_weight": 0.3917,
+      "season_grade": "B"
+    },
+    {
+      "month": 6,
+      "day": 22,
+      "environment_score": 96.78,
+      "sns_score": 39,
+      "total_score_raw": 56.1007,
+      "seasonal_weight": 0.4138,
+      "season_grade": "A"
+    },
+    {
+      "month": 6,
+      "day": 23,
+      "environment_score": 96.7943,
+      "sns_score": 52,
+      "total_score_raw": 65.4383,
+      "seasonal_weight": 0.4827,
+      "season_grade": "A"
+    },
+    {
+      "month": 6,
+      "day": 24,
+      "environment_score": 100.0,
+      "sns_score": 63,
+      "total_score_raw": 74.3333,
+      "seasonal_weight": 0.5483,
+      "season_grade": "A"
+    },
+    {
+      "month": 6,
+      "day": 25,
+      "environment_score": 97.3867,
+      "sns_score": 68,
+      "total_score_raw": 77.0493,
+      "seasonal_weight": 0.5683,
+      "season_grade": "A"
+    },
+    {
+      "month": 6,
+      "day": 26,
+      "environment_score": 100.0,
+      "sns_score": 65,
+      "total_score_raw": 75.5,
+      "seasonal_weight": 0.5569,
+      "season_grade": "A"
+    },
+    {
+      "month": 6,
+      "day": 27,
+      "environment_score": 100.0,
+      "sns_score": 58,
+      "total_score_raw": 70.6,
+      "seasonal_weight": 0.5208,
+      "season_grade": "A"
+    },
+    {
+      "month": 6,
+      "day": 28,
+      "environment_score": 100.0,
+      "sns_score": 58,
+      "total_score_raw": 70.8333,
+      "seasonal_weight": 0.5225,
+      "season_grade": "A"
+    },
+    {
+      "month": 6,
+      "day": 29,
+      "environment_score": 98.129,
+      "sns_score": 82,
+      "total_score_raw": 87.072,
+      "seasonal_weight": 0.6423,
+      "season_grade": "A"
+    },
+    {
+      "month": 6,
+      "day": 30,
+      "environment_score": 83.231,
+      "sns_score": 158,
+      "total_score_raw": 135.5693,
+      "seasonal_weight": 1.0,
+      "season_grade": "A"
+    },
+    {
+      "month": 7,
+      "day": 1,
+      "environment_score": 100.0,
+      "sns_score": 109,
+      "total_score_raw": 106.5333,
+      "seasonal_weight": 0.7858,
+      "season_grade": "A"
+    },
+    {
+      "month": 7,
+      "day": 2,
+      "environment_score": 95.7457,
+      "sns_score": 97,
+      "total_score_raw": 96.3904,
+      "seasonal_weight": 0.711,
+      "season_grade": "A"
+    },
+    {
+      "month": 7,
+      "day": 3,
+      "environment_score": 100.0,
+      "sns_score": 104,
+      "total_score_raw": 103.0333,
+      "seasonal_weight": 0.76,
+      "season_grade": "A"
+    },
+    {
+      "month": 7,
+      "day": 4,
+      "environment_score": 100.0,
+      "sns_score": 77,
+      "total_score_raw": 83.9,
+      "seasonal_weight": 0.6189,
+      "season_grade": "A"
+    },
+    {
+      "month": 7,
+      "day": 5,
+      "environment_score": 100.0,
+      "sns_score": 41,
+      "total_score_raw": 58.4667,
+      "seasonal_weight": 0.4313,
+      "season_grade": "A"
+    },
+    {
+      "month": 7,
+      "day": 6,
+      "environment_score": 97.9257,
+      "sns_score": 33,
+      "total_score_raw": 52.711,
+      "seasonal_weight": 0.3888,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 7,
+      "environment_score": 94.7523,
+      "sns_score": 37,
+      "total_score_raw": 54.559,
+      "seasonal_weight": 0.4024,
+      "season_grade": "A"
+    },
+    {
+      "month": 7,
+      "day": 8,
+      "environment_score": 95.2733,
+      "sns_score": 33,
+      "total_score_raw": 51.682,
+      "seasonal_weight": 0.3812,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 9,
+      "environment_score": 95.8523,
+      "sns_score": 29,
+      "total_score_raw": 49.0557,
+      "seasonal_weight": 0.3618,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 10,
+      "environment_score": 100.0,
+      "sns_score": 23,
+      "total_score_raw": 46.3333,
+      "seasonal_weight": 0.3418,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 11,
+      "environment_score": 98.569,
+      "sns_score": 23,
+      "total_score_raw": 45.904,
+      "seasonal_weight": 0.3386,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 12,
+      "environment_score": 100.0,
+      "sns_score": 12,
+      "total_score_raw": 38.4,
+      "seasonal_weight": 0.2832,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 13,
+      "environment_score": 97.4767,
+      "sns_score": 8,
+      "total_score_raw": 34.6097,
+      "seasonal_weight": 0.2553,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 14,
+      "environment_score": 97.6943,
+      "sns_score": 12,
+      "total_score_raw": 37.475,
+      "seasonal_weight": 0.2764,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 15,
+      "environment_score": 97.291,
+      "sns_score": 11,
+      "total_score_raw": 36.8873,
+      "seasonal_weight": 0.2721,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 16,
+      "environment_score": 93.2767,
+      "sns_score": 11,
+      "total_score_raw": 35.4497,
+      "seasonal_weight": 0.2615,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 17,
+      "environment_score": 96.1443,
+      "sns_score": 11,
+      "total_score_raw": 36.5433,
+      "seasonal_weight": 0.2696,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 18,
+      "environment_score": 95.6833,
+      "sns_score": 10,
+      "total_score_raw": 35.9383,
+      "seasonal_weight": 0.2651,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 19,
+      "environment_score": 94.5577,
+      "sns_score": 6,
+      "total_score_raw": 32.5673,
+      "seasonal_weight": 0.2402,
+      "season_grade": "C"
+    },
+    {
+      "month": 7,
+      "day": 20,
+      "environment_score": 95.9857,
+      "sns_score": 14,
+      "total_score_raw": 38.3624,
+      "seasonal_weight": 0.283,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 21,
+      "environment_score": 95.3443,
+      "sns_score": 7,
+      "total_score_raw": 33.27,
+      "seasonal_weight": 0.2454,
+      "season_grade": "C"
+    },
+    {
+      "month": 7,
+      "day": 22,
+      "environment_score": 99.7123,
+      "sns_score": 7,
+      "total_score_raw": 35.047,
+      "seasonal_weight": 0.2585,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 23,
+      "environment_score": 90.2743,
+      "sns_score": 10,
+      "total_score_raw": 33.849,
+      "seasonal_weight": 0.2497,
+      "season_grade": "C"
+    },
+    {
+      "month": 7,
+      "day": 24,
+      "environment_score": 100.0,
+      "sns_score": 5,
+      "total_score_raw": 33.7333,
+      "seasonal_weight": 0.2488,
+      "season_grade": "C"
+    },
+    {
+      "month": 7,
+      "day": 25,
+      "environment_score": 100.0,
+      "sns_score": 7,
+      "total_score_raw": 34.9,
+      "seasonal_weight": 0.2574,
+      "season_grade": "B"
+    },
+    {
+      "month": 7,
+      "day": 26,
+      "environment_score": 100.0,
+      "sns_score": 3,
+      "total_score_raw": 31.8667,
+      "seasonal_weight": 0.2351,
+      "season_grade": "C"
+    },
+    {
+      "month": 7,
+      "day": 27,
+      "environment_score": 95.6443,
+      "sns_score": 5,
+      "total_score_raw": 31.96,
+      "seasonal_weight": 0.2357,
+      "season_grade": "C"
+    },
+    {
+      "month": 7,
+      "day": 28,
+      "environment_score": 97.4043,
+      "sns_score": 3,
+      "total_score_raw": 31.3213,
+      "seasonal_weight": 0.231,
+      "season_grade": "C"
+    },
+    {
+      "month": 7,
+      "day": 29,
+      "environment_score": 100.0,
+      "sns_score": 2,
+      "total_score_raw": 31.1667,
+      "seasonal_weight": 0.2299,
+      "season_grade": "C"
+    },
+    {
+      "month": 7,
+      "day": 30,
+      "environment_score": 96.04,
+      "sns_score": 2,
+      "total_score_raw": 30.4453,
+      "seasonal_weight": 0.2246,
+      "season_grade": "C"
+    },
+    {
+      "month": 7,
+      "day": 31,
+      "environment_score": 100.0,
+      "sns_score": 2,
+      "total_score_raw": 31.1667,
+      "seasonal_weight": 0.2299,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 1,
+      "environment_score": 100.0,
+      "sns_score": 2,
+      "total_score_raw": 31.6333,
+      "seasonal_weight": 0.2333,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 2,
+      "environment_score": 99.091,
+      "sns_score": 2,
+      "total_score_raw": 31.1273,
+      "seasonal_weight": 0.2296,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 3,
+      "environment_score": 96.931,
+      "sns_score": 5,
+      "total_score_raw": 32.8126,
+      "seasonal_weight": 0.242,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 4,
+      "environment_score": 95.4667,
+      "sns_score": 4,
+      "total_score_raw": 31.44,
+      "seasonal_weight": 0.2319,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 5,
+      "environment_score": 100.0,
+      "sns_score": 3,
+      "total_score_raw": 32.1,
+      "seasonal_weight": 0.2368,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 6,
+      "environment_score": 95.8243,
+      "sns_score": 3,
+      "total_score_raw": 30.614,
+      "seasonal_weight": 0.2258,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 7,
+      "environment_score": 100.0,
+      "sns_score": 2,
+      "total_score_raw": 31.6333,
+      "seasonal_weight": 0.2333,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 8,
+      "environment_score": 100.0,
+      "sns_score": 2,
+      "total_score_raw": 31.4,
+      "seasonal_weight": 0.2316,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 9,
+      "environment_score": 100.0,
+      "sns_score": 2,
+      "total_score_raw": 31.6333,
+      "seasonal_weight": 0.2333,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 10,
+      "environment_score": 90.4267,
+      "sns_score": 2,
+      "total_score_raw": 28.7613,
+      "seasonal_weight": 0.2122,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 11,
+      "environment_score": 94.499,
+      "sns_score": 2,
+      "total_score_raw": 29.983,
+      "seasonal_weight": 0.2212,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 12,
+      "environment_score": 97.3233,
+      "sns_score": 3,
+      "total_score_raw": 31.297,
+      "seasonal_weight": 0.2309,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 13,
+      "environment_score": 94.4,
+      "sns_score": 2,
+      "total_score_raw": 29.9533,
+      "seasonal_weight": 0.2209,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 14,
+      "environment_score": 100.0,
+      "sns_score": 1,
+      "total_score_raw": 30.7,
+      "seasonal_weight": 0.2265,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 15,
+      "environment_score": 93.4123,
+      "sns_score": 1,
+      "total_score_raw": 28.4904,
+      "seasonal_weight": 0.2102,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 16,
+      "environment_score": 98.8267,
+      "sns_score": 3,
+      "total_score_raw": 31.5147,
+      "seasonal_weight": 0.2325,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 17,
+      "environment_score": 95.6467,
+      "sns_score": 1,
+      "total_score_raw": 29.394,
+      "seasonal_weight": 0.2168,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 18,
+      "environment_score": 96.06,
+      "sns_score": 2,
+      "total_score_raw": 30.218,
+      "seasonal_weight": 0.2229,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 19,
+      "environment_score": 100.0,
+      "sns_score": 2,
+      "total_score_raw": 31.4,
+      "seasonal_weight": 0.2316,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 20,
+      "environment_score": 97.1967,
+      "sns_score": 3,
+      "total_score_raw": 31.0257,
+      "seasonal_weight": 0.2289,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 21,
+      "environment_score": 100.0,
+      "sns_score": 1,
+      "total_score_raw": 30.7,
+      "seasonal_weight": 0.2265,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 22,
+      "environment_score": 100.0,
+      "sns_score": 1,
+      "total_score_raw": 30.4667,
+      "seasonal_weight": 0.2247,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 23,
+      "environment_score": 100.0,
+      "sns_score": 3,
+      "total_score_raw": 31.8667,
+      "seasonal_weight": 0.2351,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 24,
+      "environment_score": 97.0767,
+      "sns_score": 5,
+      "total_score_raw": 32.8563,
+      "seasonal_weight": 0.2424,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 25,
+      "environment_score": 97.4,
+      "sns_score": 3,
+      "total_score_raw": 31.32,
+      "seasonal_weight": 0.231,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 26,
+      "environment_score": 100.0,
+      "sns_score": 1,
+      "total_score_raw": 30.7,
+      "seasonal_weight": 0.2265,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 27,
+      "environment_score": 98.069,
+      "sns_score": 4,
+      "total_score_raw": 31.9874,
+      "seasonal_weight": 0.2359,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 28,
+      "environment_score": 99.1823,
+      "sns_score": 2,
+      "total_score_raw": 31.388,
+      "seasonal_weight": 0.2315,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 29,
+      "environment_score": 98.8823,
+      "sns_score": 1,
+      "total_score_raw": 30.3647,
+      "seasonal_weight": 0.224,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 30,
+      "environment_score": 100.0,
+      "sns_score": 0,
+      "total_score_raw": 30.2333,
+      "seasonal_weight": 0.223,
+      "season_grade": "C"
+    },
+    {
+      "month": 8,
+      "day": 31,
+      "environment_score": 97.5333,
+      "sns_score": 1,
+      "total_score_raw": 29.96,
+      "seasonal_weight": 0.221,
+      "season_grade": "C"
+    }
+  ]
+}

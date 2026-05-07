@@ -2,6 +2,7 @@ package com.skku.milkyway.api.risk.response;
 
 import com.skku.milkyway.api.code.PrecipitationType;
 import com.skku.milkyway.api.code.RiskLevel;
+import com.skku.milkyway.api.code.SeasonGrade;
 import com.skku.milkyway.api.code.SkyCondition;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,8 @@ public class RegionRiskResponse {
     private double longitude;
     private RiskLevel riskLevel;
     private int riskPercent;
+    private int baseRiskPercent;
+    private SeasonGrade seasonGrade;
     private int instaCnt;
     private double temperature;
     private double humidity;

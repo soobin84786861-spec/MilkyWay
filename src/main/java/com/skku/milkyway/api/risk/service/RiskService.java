@@ -1,6 +1,7 @@
 package com.skku.milkyway.api.risk.service;
 
 import com.skku.milkyway.api.code.RiskLevel;
+import com.skku.milkyway.api.code.SeasonGrade;
 import com.skku.milkyway.api.code.SeoulDistrict;
 import com.skku.milkyway.api.forest.service.ForestAreaService;
 import com.skku.milkyway.api.illumination.service.IlluminationService;
@@ -12,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +35,7 @@ public class RiskService {
     private final IlluminationService illuminationService;
     private final TrafficService trafficService;
     private final ForestAreaService forestAreaService;
+    private final PastSeasonService pastSeasonService;
     private final RiskAnalysisExcelService riskAnalysisExcelService;
 
     private volatile RiskSnapshot riskSnapshot = RiskSnapshot.empty();
@@ -84,6 +88,8 @@ public class RiskService {
         Map<SeoulDistrict, Double> illuminationByDistrict = illuminationService.getAllCurrentIllumination();
         Map<SeoulDistrict, Double> trafficAverageByDistrict = trafficService.getAllCurrentAverageTraffic();
         Map<SeoulDistrict, Double> trafficScoreByDistrict = trafficService.getAllCurrentTrafficScores();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        SeasonGrade seasonGrade = pastSeasonService.getSeasonGrade(today).orElse(SeasonGrade.C);
         Map<SeoulDistrict, Double> habitatRatioByDistrict = Arrays.stream(SeoulDistrict.values())
                 .collect(java.util.stream.Collectors.toMap(
                         district -> district,
@@ -97,9 +103,16 @@ public class RiskService {
                         district,
                         weatherByDistrict.getOrDefault(district, defaultWeather()),
                         illuminationByDistrict.getOrDefault(district, 0.0),
-                        trafficScoreByDistrict.getOrDefault(district, 0.0)
+                        trafficScoreByDistrict.getOrDefault(district, 0.0),
+                        seasonGrade
                 ))
                 .toList();
+
+        log.info(
+                "[Risk] season policy applied - date={}, seasonGrade={}",
+                today,
+                seasonGrade
+        );
 
         riskAnalysisExcelService.export(
                 LocalDateTime.now(),
@@ -121,7 +134,8 @@ public class RiskService {
             SeoulDistrict district,
             WeatherResponse weather,
             double illumination,
-            double trafficScore
+            double trafficScore,
+            SeasonGrade seasonGrade
     ) {
         int temperatureScore = temperatureScore(weather.temperature());
         int humidityScore = humidityScore(weather.humidity());
@@ -132,15 +146,20 @@ public class RiskService {
         double trafficFactor = toTrafficFactor(trafficScore);
 
         double riskIndex = calculateRiskIndex(weatherIndex, habitatFactor, trafficFactor);
-        int riskPercent = toPercent(riskIndex);
+        int baseRiskPercent = toPercent(riskIndex);
+        int riskPercent = applySeasonPolicy(baseRiskPercent, seasonGrade);
+        double adjustedRiskIndex = round(riskPercent / 10.0);
+        RiskLevel adjustedRiskLevel = toRiskLevel(riskPercent);
 
         return RegionRiskResponse.builder()
                 .districtCode(district.name())
                 .regionName(district.getKoreanName())
                 .latitude(district.getLatitude())
                 .longitude(district.getLongitude())
-                .riskLevel(toRiskLevel(riskPercent))
+                .riskLevel(adjustedRiskLevel)
                 .riskPercent(riskPercent)
+                .baseRiskPercent(baseRiskPercent)
+                .seasonGrade(seasonGrade)
                 .instaCnt(0)
                 .temperature(weather.temperature())
                 .humidity(weather.humidity())
@@ -155,8 +174,21 @@ public class RiskService {
                 .weatherIndex(weatherIndex)
                 .habitatFactor(habitatFactor)
                 .trafficFactor(trafficFactor)
-                .riskIndex(riskIndex)
+                .riskIndex(adjustedRiskIndex)
                 .build();
+    }
+
+    private int applySeasonPolicy(int baseRiskPercent, SeasonGrade seasonGrade) {
+        return switch (seasonGrade) {
+            case A -> baseRiskPercent;
+            case B -> scaleRisk(baseRiskPercent, 0.8);
+            case C -> scaleRisk(baseRiskPercent, 0.2);
+        };
+    }
+
+    private int scaleRisk(int baseRiskPercent, double factor) {
+        int scaled = (int) Math.round(baseRiskPercent * factor);
+        return Math.max(0, Math.min(100, scaled));
     }
 
     /**

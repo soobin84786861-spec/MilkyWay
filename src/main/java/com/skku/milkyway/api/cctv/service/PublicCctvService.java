@@ -31,7 +31,7 @@ import java.util.Optional;
 @Service
 public class PublicCctvService {
 
-    private static final String RESOURCE_PATH = "cctv/public-cctv-sample.json";
+    private static final String RESOURCE_PATH = "cctv/public-cctv.json";
     private static final String LOCAL_STREAM_URL_TEMPLATE = "/api/cctv/%s/stream";
     private static final String UTIC_BASE_URL = "https://www.utic.go.kr";
     private static final String UTIC_INFO_URL_TEMPLATE = UTIC_BASE_URL + "/map/getCctvInfoById.do?cctvId=%s";

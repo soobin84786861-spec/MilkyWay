@@ -15,7 +15,7 @@ import java.util.Map;
 @Service
 public class ForestAreaService {
 
-    private static final String RESOURCE_PATH = "risk/forest-area-by-district.json";
+    private static final String RESOURCE_PATH = "forest/forest-district.json";
 
     private final Map<SeoulDistrict, Double> forestAreaByDistrict;
     private final double maxForestArea;
