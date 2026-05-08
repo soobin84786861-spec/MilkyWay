@@ -58,7 +58,7 @@ export default function App() {
   }, [riskFilter]);
 
   useEffect(() => {
-    if (selectedDistrict && !districts.find((d) => d.id === selectedDistrict.id)) {
+    if (selectedDistrict && !districts.find((district) => district.id === selectedDistrict.id)) {
       setSelectedDistrict(null);
     }
   }, [districts, selectedDistrict]);
@@ -75,7 +75,11 @@ export default function App() {
   }, [cctvEnabled, cctvLoaded]);
 
   const top5Districts = useMemo(
-    () => [...districts].sort((a, b) => b.probability - a.probability).slice(0, 5),
+    () =>
+      districts
+        .filter((district) => district.riskLevel !== 'SAFE')
+        .sort((a, b) => b.probability - a.probability)
+        .slice(0, 5),
     [districts]
   );
 
@@ -89,7 +93,7 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-slate-100 overflow-hidden">
+    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-slate-100">
       <TopNav
         riskFilter={riskFilter}
         onRiskFilterChange={setRiskFilter}
@@ -97,27 +101,25 @@ export default function App() {
         onCctvToggle={() => setCctvEnabled((prev) => !prev)}
       />
 
-      <div className="flex-1 relative overflow-hidden">
+      <div className="relative min-h-0 flex-1 overflow-hidden">
         {loading && (
           <div className="absolute inset-0 z-40 flex items-center justify-center bg-slate-100/70 backdrop-blur-sm">
             <div className="flex flex-col items-center gap-3">
-              <div className="w-9 h-9 border-4 border-slate-200 border-t-red-500 rounded-full animate-spin" />
-              <p className="text-sm text-slate-500 font-medium">
-                {'데이터 불러오는 중...'}
-              </p>
+              <div className="h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-red-500" />
+              <p className="text-sm font-medium text-slate-500">데이터 불러오는 중...</p>
             </div>
           </div>
         )}
 
         {error && !loading && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-red-50 border border-red-200 text-red-700 text-sm font-medium px-5 py-2.5 rounded-xl shadow-md flex items-center gap-2">
-            <span>{'오류'}</span>
-            <span>{`API 연결 실패: ${error}`}</span>
+          <div className="absolute left-3 right-3 top-4 z-40 mx-auto flex max-w-xl items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-md sm:left-1/2 sm:right-auto sm:w-max sm:min-w-[340px] sm:-translate-x-1/2">
+            <span>오류</span>
+            <span className="min-w-0 flex-1 truncate">API 연결 실패: {error}</span>
             <button
               onClick={() => setRiskFilter((prev) => prev)}
-              className="ml-2 underline text-red-600 hover:text-red-800"
+              className="underline text-red-600 hover:text-red-800"
             >
-              {'다시 시도'}
+              다시 시도
             </button>
           </div>
         )}
@@ -142,14 +144,14 @@ export default function App() {
         <DetailPanel district={selectedDistrict} onClose={() => setSelectedDistrict(null)} />
 
         {cctvViewer && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/45 backdrop-blur-[2px] p-6">
-            <div className="w-full max-w-4xl h-[72vh] flex flex-col rounded-[24px] bg-white shadow-2xl border border-slate-200 overflow-hidden">
-              <div className="flex shrink-0 items-center justify-between px-5 py-3 border-b border-slate-100 bg-white">
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-3 backdrop-blur-[2px] sm:p-6">
+            <div className="flex h-[44dvh] w-full max-w-md flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl sm:h-[72vh] sm:max-w-4xl sm:rounded-[24px]">
+              <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4 py-3 sm:px-5">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400 sm:text-xs">
                     CCTV Viewer
                   </p>
-                  <h2 className="truncate text-lg font-bold text-slate-800">
+                  <h2 className="truncate text-[15px] font-bold text-slate-800 sm:text-lg">
                     {cctvViewer.cctv.name}
                   </h2>
                 </div>
@@ -157,9 +159,9 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setCctvViewer(null)}
-                  className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+                  className="rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700 sm:px-4 sm:py-2 sm:text-sm"
                 >
-                  {'닫기'}
+                  닫기
                 </button>
               </div>
 
@@ -167,15 +169,15 @@ export default function App() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `scale(${cctvScale})`,
-                    transformOrigin: 'top center',
+                      transform: `translateY(-84px) scale(${cctvScale})`,
+                      transformOrigin: 'top center',
                   }}
                 >
                   <iframe
                     key={cctvViewer.streamUrl}
                     src={cctvViewer.streamUrl}
                     title={`${cctvViewer.cctv.name} CCTV`}
-                    className="w-full h-full bg-black"
+                    className="h-full w-full bg-black"
                     referrerPolicy="strict-origin-when-cross-origin"
                   />
                 </div>

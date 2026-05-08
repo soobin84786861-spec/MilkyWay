@@ -7,13 +7,15 @@ export default function Legend() {
   ];
 
   return (
-    <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-100 p-4 z-20">
-      <p className="text-xs font-semibold text-slate-500 mb-2.5 uppercase tracking-wide">위험도</p>
-      <div className="flex flex-col gap-2">
+    <div className="absolute bottom-6 left-3 z-20 rounded-2xl border border-slate-100 bg-white/92 p-3 shadow-lg backdrop-blur-sm md:bottom-6 md:left-6 md:p-4">
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 md:mb-2.5 md:text-xs">
+        위험도
+      </p>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-1 md:gap-x-0 md:gap-y-2">
         {items.map(({ color, label }) => (
-          <div key={label} className="flex items-center gap-2.5">
-            <span className={`w-3.5 h-3.5 rounded-sm ${color} flex-shrink-0`} />
-            <span className="text-sm text-slate-700 font-medium">{label}</span>
+          <div key={label} className="flex items-center gap-2">
+            <span className={`h-3 w-3 flex-shrink-0 rounded-sm ${color} md:h-3.5 md:w-3.5`} />
+            <span className="text-xs font-medium text-slate-700 md:text-sm">{label}</span>
           </div>
         ))}
       </div>

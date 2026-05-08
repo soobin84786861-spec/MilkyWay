@@ -86,17 +86,9 @@ public class RiskService {
 
         Map<SeoulDistrict, WeatherResponse> weatherByDistrict = weatherService.getAllWeather();
         Map<SeoulDistrict, Double> illuminationByDistrict = illuminationService.getAllCurrentIllumination();
-        Map<SeoulDistrict, Double> trafficAverageByDistrict = trafficService.getAllCurrentAverageTraffic();
         Map<SeoulDistrict, Double> trafficScoreByDistrict = trafficService.getAllCurrentTrafficScores();
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
         SeasonGrade seasonGrade = pastSeasonService.getSeasonGrade(today).orElse(SeasonGrade.C);
-        Map<SeoulDistrict, Double> habitatRatioByDistrict = Arrays.stream(SeoulDistrict.values())
-                .collect(java.util.stream.Collectors.toMap(
-                        district -> district,
-                        forestAreaService::getHabitatRatio,
-                        (left, right) -> left,
-                        () -> new java.util.EnumMap<>(SeoulDistrict.class)
-                ));
 
         List<RegionRiskResponse> result = Arrays.stream(SeoulDistrict.values())
                 .map(district -> toResponse(
@@ -112,15 +104,6 @@ public class RiskService {
                 "[Risk] season policy applied - date={}, seasonGrade={}",
                 today,
                 seasonGrade
-        );
-
-        riskAnalysisExcelService.export(
-                LocalDateTime.now(),
-                result,
-                habitatRatioByDistrict,
-                trafficScoreByDistrict,
-                forestAreaService.getMaxForestArea(),
-                trafficAverageByDistrict
         );
 
         log.info("[Risk] 전체 자치구 위험도 계산 완료 - elapsed={}ms", System.currentTimeMillis() - startedAt);
@@ -147,7 +130,7 @@ public class RiskService {
 
         double riskIndex = calculateRiskIndex(weatherIndex, habitatFactor, trafficFactor);
         int baseRiskPercent = toPercent(riskIndex);
-        int riskPercent = applySeasonPolicy(baseRiskPercent, seasonGrade);
+        int riskPercent = applySeasonPolicy(baseRiskPercent, seasonGrade) + 60; // 임시 더미;
         double adjustedRiskIndex = round(riskPercent / 10.0);
         RiskLevel adjustedRiskLevel = toRiskLevel(riskPercent);
 

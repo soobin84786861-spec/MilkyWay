@@ -12,7 +12,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXParseException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
@@ -61,6 +63,8 @@ public class TrafficApiClient {
         while (totalCount == null || startIndex <= totalCount) {
             int endIndex = startIndex + batchSize - 1;
             String url = buildUrl(serviceName, startIndex, endIndex, extraSegments);
+
+            System.out.println("url : " + url);
             String xml = restTemplate.getForObject(url, String.class);
             if (xml == null || xml.isBlank()) {
                 throw new TrafficApiException("교통량 API 응답이 비어 있습니다: " + url);
@@ -111,10 +115,20 @@ public class TrafficApiClient {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(false);
             factory.setExpandEntityReferences(false);
-            return factory.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+            var builder = factory.newDocumentBuilder();
+            builder.setErrorHandler(new SilentErrorHandler());
+            return builder.parse(new InputSource(new StringReader(sanitizeXml(xml))));
         } catch (Exception e) {
             throw new TrafficApiException("교통량 API XML 파싱에 실패했습니다.", e);
         }
+    }
+
+    private String sanitizeXml(String xml) {
+        if (xml == null || xml.isBlank()) {
+            return xml;
+        }
+
+        return xml.replaceAll("&(?!amp;|lt;|gt;|quot;|apos;|#\\d+;|#x[0-9A-Fa-f]+;)", "&amp;");
     }
 
     private void ensureSuccess(Document document) {
@@ -205,6 +219,22 @@ public class TrafficApiClient {
         }
         if (serviceName == null || serviceName.isBlank()) {
             throw new TrafficApiException("seoul.traffic-api." + propertyName + " 설정이 비어 있습니다.");
+        }
+    }
+    private static final class SilentErrorHandler implements ErrorHandler {
+        @Override
+        public void warning(SAXParseException exception) throws SAXParseException {
+            throw exception;
+        }
+
+        @Override
+        public void error(SAXParseException exception) throws SAXParseException {
+            throw exception;
+        }
+
+        @Override
+        public void fatalError(SAXParseException exception) throws SAXParseException {
+            throw exception;
         }
     }
 }

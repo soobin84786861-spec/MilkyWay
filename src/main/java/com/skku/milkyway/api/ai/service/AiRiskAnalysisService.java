@@ -27,17 +27,17 @@ public class AiRiskAnalysisService {
     private static final String SYSTEM_PROMPT_PATH = "prompts/ai-risk-system.st";
     private static final String USER_PROMPT_PATH = "prompts/ai-risk-user.st";
     private static final List<LifeStageContext> LIFE_STAGE_CONTEXTS = List.of(
-            new LifeStageContext(1, 6, "알·유충기",
-                    "현재는 러브버그가 알 또는 유충 상태로 토양 속에서 성장하는 시기다. 성충은 6월 중순 이후부터 지상에 출몰하기 시작한다. 위험 지수는 환경 조건의 잠재력을 나타내며, 실제 성충 출몰은 아직 이르다."),
+            new LifeStageContext(1, 6, "유충기",
+                    "현재는 러브버그가 땅속 또는 서식 환경에서 자라는 시기다. 성충 출몰은 보통 6월 중순 이후부터 시작되므로, 환경 조건은 유리해도 실제 대량 출몰 시점은 아직 아닐 수 있다."),
             new LifeStageContext(6, 8, "성충 활동기",
-                    "현재는 러브버그 성충이 우화하여 지상에서 활발하게 활동하는 시기다. 기온, 습도, 조도 조건에 따라 실질적인 출몰 위험이 존재한다."),
-            new LifeStageContext(9, 12, "알·유충기",
-                    "현재는 러브버그 성충 활동이 거의 종료되고 알·유충 단계로 접어드는 시기다. 당분간 성충 출몰 위험은 낮다.")
+                    "현재는 러브버그 성충이 활발하게 이동하고 관측되는 시기다. 기온, 습도, 조도 조건에 따라 실제 출몰 위험이 높아질 수 있다."),
+            new LifeStageContext(9, 12, "비활동기",
+                    "현재는 러브버그 성충 활동이 거의 종료된 시기다. 일부 환경 요인은 높더라도 실제 출몰 가능성은 낮다.")
     );
     private static final List<TimeAdviceContext> TIME_ADVICE_CONTEXTS = List.of(
-            new TimeAdviceContext(5, 10, "출근·등교 이동 시간대", "대중교통 대기, 버스정류장 이동, 횡단보도 대기처럼 야외 체류가 있는 시간대"),
-            new TimeAdviceContext(10, 17, "주간 야외활동 시간대", "공원, 산책로, 도심 골목 이동처럼 야외 이동과 체류가 이어지는 시간대"),
-            new TimeAdviceContext(17, 22, "퇴근 이후 야외활동 시간대", "조명 주변 체류와 도보 이동이 늘어나는 시간대"),
+            new TimeAdviceContext(5, 10, "출근·등교 이동 시간대", "버스정류장, 횡단보도, 도로변처럼 실외 체류가 있는 시간대"),
+            new TimeAdviceContext(10, 17, "주간 야외활동 시간대", "공원, 산책로, 주택가 골목 이동처럼 야외 체류가 이어지는 시간대"),
+            new TimeAdviceContext(17, 22, "퇴근 이후 야외활동 시간대", "조명 주변 체류 또는 귀가 이동이 늘어나는 시간대"),
             new TimeAdviceContext(22, 24, "야간 실내관리 시간대", "귀가 후 환기, 창문 개방, 실내 유입 관리가 중요한 시간대"),
             new TimeAdviceContext(0, 5, "야간 실내관리 시간대", "귀가 후 환기, 창문 개방, 실내 유입 관리가 중요한 시간대")
     );
@@ -100,25 +100,9 @@ public class AiRiskAnalysisService {
                               "items": { "type": "string" },
                               "minItems": 3,
                               "maxItems": 3
-                            },
-                            "basedOn": {
-                              "type": "object",
-                              "properties": {
-                                "riskPercent": { "type": "integer" },
-                                "temperature": { "type": "number" },
-                                "humidity": { "type": "number" },
-                                "illumination": { "type": "number" },
-                                "windSpeedMph": { "type": "number" },
-                                "weatherIndex": { "type": "number" },
-                                "habitatFactor": { "type": "number" },
-                                "trafficFactor": { "type": "number" },
-                                "riskIndex": { "type": "number" }
-                              },
-                              "required": ["riskPercent", "temperature", "humidity", "illumination", "windSpeedMph", "weatherIndex", "habitatFactor", "trafficFactor", "riskIndex"],
-                              "additionalProperties": false
                             }
                           },
-                          "required": ["summary", "comfortMessage", "timeAdvice", "actionGuides", "riskFactors", "basedOn"],
+                          "required": ["summary", "comfortMessage", "timeAdvice", "actionGuides", "riskFactors"],
                           "additionalProperties": false
                         }
                         """
@@ -190,29 +174,18 @@ public class AiRiskAnalysisService {
 
     private AiRiskAnalysisResponse fallbackResponse(RegionRiskResponse region) {
         return new AiRiskAnalysisResponse(
-                "현재 " + region.getRegionName() + "은 러브버그 노출 가능성이 있어 주의가 필요한 상태입니다.",
+                "현재 " + region.getRegionName() + "은 러브버그 출몰 가능성이 있어 주의가 필요한 상태입니다.",
                 "너무 걱정하지 말고, 필요한 만큼만 대비해도 충분합니다.",
-                "현재 시간대에는 야외 조명 주변 체류와 실내 유입 가능성을 함께 확인해보세요.",
+                "현재 시간대에는 실외 조명 주변 체류와 실내 유입 가능성을 함께 확인해보세요.",
                 List.of(
                         "창문과 방충망 상태를 먼저 확인하세요.",
-                        "밝은 조명 주변 야외 체류 시간을 줄이세요.",
-                        "귀가 후 의류와 차량 표면을 점검하세요."
+                        "밝은 조명 주변 야외 체류 시간은 줄여보세요.",
+                        "귀가 후 의류와 차량 표면을 가볍게 털어주세요."
                 ),
                 List.of(
-                        "현재 기온과 습도 조건이 활동 가능성에 영향을 줍니다.",
-                        "조도와 풍속 조건이 러브버그 이동과 유인에 반영됩니다.",
+                        "현재 기온과 습도 조건이 러브버그 활동 가능성에 영향을 줍니다.",
+                        "조도와 풍속 조건이 러브버그 이동과 유입 요인으로 반영됩니다.",
                         "서식지 계수와 교통 계수가 지역 위험도에 함께 반영됩니다."
-                ),
-                new AiRiskAnalysisResponse.BasedOn(
-                        region.getRiskPercent(),
-                        region.getTemperature(),
-                        region.getHumidity(),
-                        region.getIllumination(),
-                        round(toMph(region.getWindSpeed())),
-                        region.getWeatherIndex(),
-                        region.getHabitatFactor(),
-                        region.getTrafficFactor(),
-                        region.getRiskIndex()
                 )
         );
     }

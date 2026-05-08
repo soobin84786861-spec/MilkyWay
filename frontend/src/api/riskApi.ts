@@ -21,17 +21,6 @@ export interface AiRiskAnalysisResponse {
   timeAdvice: string;
   actionGuides: string[];
   riskFactors: string[];
-  basedOn: {
-    riskPercent: number;
-    temperature: number;
-    humidity: number;
-    illumination: number;
-    windSpeedMph: number;
-    weatherIndex: number;
-    habitatFactor: number;
-    trafficFactor: number;
-    riskIndex: number;
-  };
 }
 
 const FILTER_PARAM: Partial<Record<RiskFilterType, RiskLevel>> = {

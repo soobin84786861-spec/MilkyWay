@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skku.milkyway.api.cctv.response.PublicCctvResponse;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -19,14 +20,24 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.xml.parsers.DocumentBuilderFactory;
 
 @Service
 public class PublicCctvService {
@@ -34,10 +45,15 @@ public class PublicCctvService {
     private static final String RESOURCE_PATH = "cctv/public-cctv.json";
     private static final String LOCAL_STREAM_URL_TEMPLATE = "/api/cctv/%s/stream";
     private static final String UTIC_BASE_URL = "https://www.utic.go.kr";
+    private static final String UTIC_REFERER_URL = UTIC_BASE_URL + "/main/main.do";
+    private static final String UTIC_OPEN_DATA_URL_TEMPLATE = "http://www.utic.go.kr/guide/cctvOpenData.do?key=%s";
     private static final String UTIC_INFO_URL_TEMPLATE = UTIC_BASE_URL + "/map/getCctvInfoById.do?cctvId=%s";
     private static final String UTIC_FALLBACK_INFO_URL_TEMPLATE = "http://www.utic.go.kr/map/getCctvInfoById.do?cctvId=%s";
     private static final String UTIC_STREAM_URL_TEMPLATE =
             UTIC_BASE_URL + "/jsp/map/cctvStream.jsp?cctvid=%s&cctvname=%s&kind=%s&cctvip=%s&cctvch=%s&id=%s&cctvpasswd=%s&cctvport=%s%s";
+    private static final Pattern ARRAY_PATTERN = Pattern.compile("\\[(.*)]", Pattern.DOTALL);
+    private static final Pattern OBJECT_PATTERN = Pattern.compile("\\{([^{}]*)}");
+    private static final Pattern FIELD_PATTERN = Pattern.compile("([A-Za-z0-9_]+)\\s*:\\s*(\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*'|[^,}]+)");
 
     private static final String PROXY_INJECT_HEAD = "<base href=\"" + UTIC_BASE_URL + "/\">";
     private static final String PROXY_INJECT_CSS = """
@@ -50,6 +66,11 @@ public class PublicCctvService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final RestTemplate restTemplate = new RestTemplate();
     private final RestTemplate sslTrustingRestTemplate = buildSslTrustingRestTemplate();
+    private final String openDataKey;
+
+    public PublicCctvService(@Value("${utic.cctv-open-data.key:}") String openDataKey) {
+        this.openDataKey = openDataKey == null ? "" : openDataKey.trim();
+    }
 
     private static RestTemplate buildSslTrustingRestTemplate() {
         try {
@@ -93,7 +114,7 @@ public class PublicCctvService {
         String streamUrl = resolveStreamUrl(cctvId, viewBounds);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.REFERER, UTIC_BASE_URL + "/");
+        headers.set(HttpHeaders.REFERER, UTIC_REFERER_URL);
         headers.set(HttpHeaders.USER_AGENT, "Mozilla/5.0");
         headers.setAccept(List.of(MediaType.TEXT_HTML, MediaType.ALL));
 
@@ -129,6 +150,11 @@ public class PublicCctvService {
     }
 
     private List<PublicCctvItem> loadItems() {
+        List<PublicCctvItem> openDataItems = loadItemsFromOpenData();
+        if (!openDataItems.isEmpty()) {
+            return openDataItems;
+        }
+
         try (InputStream inputStream = new ClassPathResource(RESOURCE_PATH).getInputStream()) {
             PublicCctvResource resource = objectMapper.readValue(inputStream, PublicCctvResource.class);
             return resource.items();
@@ -143,11 +169,62 @@ public class PublicCctvService {
                 .findFirst();
     }
 
+    private List<PublicCctvItem> loadItemsFromOpenData() {
+        if (!hasText(openDataKey) || openDataKey.startsWith("YOUR_")) {
+            return List.of();
+        }
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.USER_AGENT, "Mozilla/5.0");
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, MediaType.ALL));
+
+            String body = restTemplate.exchange(
+                    URI.create(buildOpenDataUrl()),
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    String.class
+            ).getBody();
+
+            if (!hasText(body)) {
+                return List.of();
+            }
+
+            return parseOpenDataItems(body).stream()
+                    .filter(this::isSeoulMovieCctv)
+                    .map(this::toPublicCctvItem)
+                    .toList();
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
     private String buildLocalStreamUrl(String cctvId) {
         return LOCAL_STREAM_URL_TEMPLATE.formatted(cctvId);
     }
 
+    private String buildOpenDataUrl() {
+        String normalizedKey = openDataKey.contains("%")
+                ? URLDecoder.decode(openDataKey, StandardCharsets.UTF_8)
+                : openDataKey;
+        return UTIC_OPEN_DATA_URL_TEMPLATE.formatted(encodeQueryValue(normalizedKey));
+    }
+
     private UticCctvInfo fetchUticCctvInfo(String cctvId) {
+        Optional<PublicCctvItem> localItem = findItemById(cctvId);
+        if (localItem.isPresent() && localItem.get().openDataBacked()) {
+            return new UticCctvInfo(
+                    localItem.get().cctvId(),
+                    localItem.get().name(),
+                    localItem.get().cctvIp(),
+                    localItem.get().port(),
+                    localItem.get().channel(),
+                    localItem.get().remoteId(),
+                    localItem.get().password(),
+                    localItem.get().kind()
+            );
+        }
+
         Exception lastException = null;
 
         for (String url : List.of(
@@ -173,7 +250,7 @@ public class PublicCctvService {
 
     private UticCctvInfo requestUticCctvInfo(String url) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.REFERER, "https://www.utic.go.kr/");
+        headers.set(HttpHeaders.REFERER, UTIC_REFERER_URL);
         headers.set("X-Requested-With", "XMLHttpRequest");
         headers.set(HttpHeaders.USER_AGENT, "Mozilla/5.0");
         headers.setAccept(List.of(MediaType.APPLICATION_JSON, MediaType.ALL));
@@ -279,6 +356,167 @@ public class PublicCctvService {
         return value != null && !value.isBlank();
     }
 
+    private List<UticOpenDataItem> parseOpenDataItems(String rawBody) throws IOException {
+        String body = rawBody.trim();
+        if (body.startsWith("<")) {
+            return parseXmlOpenDataItems(body);
+        }
+
+        try {
+            return parseTreeOpenDataItems(objectMapper.readTree(body));
+        } catch (Exception ignored) {
+            return parseJavascriptStyleItems(body);
+        }
+    }
+
+    private List<UticOpenDataItem> parseTreeOpenDataItems(com.fasterxml.jackson.databind.JsonNode node) {
+        if (node == null || node.isNull()) {
+            return List.of();
+        }
+
+        if (node.isArray()) {
+            return readJsonArrayItems(node);
+        }
+
+        if (node.isObject()) {
+            for (String fieldName : List.of("data", "list", "items", "rows", "result")) {
+                var child = node.get(fieldName);
+                if (child != null && child.isArray()) {
+                    return readJsonArrayItems(child);
+                }
+            }
+        }
+
+        return List.of();
+    }
+
+    private List<UticOpenDataItem> readJsonArrayItems(com.fasterxml.jackson.databind.JsonNode arrayNode) {
+        List<UticOpenDataItem> items = new ArrayList<>();
+        for (var node : arrayNode) {
+            if (!node.isObject()) {
+                continue;
+            }
+
+            Map<String, String> values = new LinkedHashMap<>();
+            node.fields().forEachRemaining(entry -> {
+                values.put(entry.getKey(), entry.getValue().isNull() ? "" : entry.getValue().asText());
+            });
+            items.add(UticOpenDataItem.from(values));
+        }
+        return items;
+    }
+
+    private List<UticOpenDataItem> parseJavascriptStyleItems(String body) {
+        Matcher arrayMatcher = ARRAY_PATTERN.matcher(body);
+        if (!arrayMatcher.find()) {
+            return List.of();
+        }
+
+        String arrayBody = arrayMatcher.group(1);
+        Matcher objectMatcher = OBJECT_PATTERN.matcher(arrayBody);
+        List<UticOpenDataItem> items = new ArrayList<>();
+
+        while (objectMatcher.find()) {
+            String objectBody = objectMatcher.group(1);
+            Matcher fieldMatcher = FIELD_PATTERN.matcher(objectBody);
+            Map<String, String> values = new LinkedHashMap<>();
+            while (fieldMatcher.find()) {
+                values.put(fieldMatcher.group(1), normalizeJavascriptValue(fieldMatcher.group(2)));
+            }
+            if (!values.isEmpty()) {
+                items.add(UticOpenDataItem.from(values));
+            }
+        }
+
+        return items;
+    }
+
+    private List<UticOpenDataItem> parseXmlOpenDataItems(String body) {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(false);
+            factory.setXIncludeAware(false);
+            factory.setExpandEntityReferences(false);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+
+            var builder = factory.newDocumentBuilder();
+            builder.setEntityResolver((publicId, systemId) -> new org.xml.sax.InputSource(new StringReader("")));
+            var document = builder.parse(new java.io.ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
+            var itemNodes = document.getElementsByTagName("item");
+            if (itemNodes.getLength() == 0) {
+                itemNodes = document.getElementsByTagName("data");
+            }
+
+            List<UticOpenDataItem> items = new ArrayList<>();
+            for (int index = 0; index < itemNodes.getLength(); index++) {
+                var node = itemNodes.item(index);
+                var childNodes = node.getChildNodes();
+                Map<String, String> values = new LinkedHashMap<>();
+                for (int childIndex = 0; childIndex < childNodes.getLength(); childIndex++) {
+                    var child = childNodes.item(childIndex);
+                    if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        values.put(child.getNodeName(), child.getTextContent());
+                    }
+                }
+                if (!values.isEmpty()) {
+                    items.add(UticOpenDataItem.from(values));
+                }
+            }
+            return items;
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    private String normalizeJavascriptValue(String rawValue) {
+        String value = rawValue == null ? "" : rawValue.trim();
+        if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.substring(1, value.length() - 1);
+        }
+        return value
+                .replace("\\\"", "\"")
+                .replace("\\'", "'")
+                .replace("\\\\", "\\");
+    }
+
+    private boolean isSeoulMovieCctv(UticOpenDataItem item) {
+        return hasText(item.cctvId())
+                && item.cctvId().startsWith("L01")
+                && parseDouble(item.xCoord()) > 0
+                && parseDouble(item.yCoord()) > 0
+                && !"N".equalsIgnoreCase(trimToEmpty(item.movie()));
+    }
+
+    private PublicCctvItem toPublicCctvItem(UticOpenDataItem item) {
+        return new PublicCctvItem(
+                item.cctvName(),
+                parseDouble(item.yCoord()),
+                parseDouble(item.xCoord()),
+                item.cctvId(),
+                item.cctvIp(),
+                item.port(),
+                item.channel(),
+                item.id(),
+                item.password(),
+                item.kind(),
+                true
+        );
+    }
+
+    private double parseDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    private String trimToEmpty(String value) {
+        return value == null ? "" : value.trim();
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     private record PublicCctvResource(List<PublicCctvItem> items) {
     }
@@ -288,8 +526,69 @@ public class PublicCctvService {
             String name,
             double latitude,
             double longitude,
-            String cctvId
+            String cctvId,
+            String cctvIp,
+            String port,
+            String channel,
+            String remoteId,
+            String password,
+            String kind,
+            boolean openDataBacked
     ) {
+        PublicCctvItem(
+                String name,
+                double latitude,
+                double longitude,
+                String cctvId
+        ) {
+            this(name, latitude, longitude, cctvId, null, null, null, null, null, null, false);
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record UticOpenDataItem(
+            String CCTVID,
+            String CCTVNAME,
+            String XCOORD,
+            String YCOORD,
+            String CCTVIP,
+            String PORT,
+            String CH,
+            String ID,
+            String PASSWD,
+            String KIND,
+            String MOVIE
+    ) {
+        static UticOpenDataItem from(Map<String, String> values) {
+            Map<String, String> normalized = new LinkedHashMap<>();
+            values.forEach((key, value) -> normalized.put(key.toUpperCase(Locale.ROOT), value));
+
+            return new UticOpenDataItem(
+                    normalized.get("CCTVID"),
+                    normalized.get("CCTVNAME"),
+                    normalized.get("XCOORD"),
+                    normalized.get("YCOORD"),
+                    normalized.get("CCTVIP"),
+                    normalized.get("PORT"),
+                    normalized.get("CH"),
+                    normalized.get("ID"),
+                    normalized.get("PASSWD"),
+                    normalized.get("KIND"),
+                    normalized.get("MOVIE")
+            );
+        }
+
+        String cctvId() { return CCTVID; }
+        String cctvName() { return CCTVNAME; }
+        String xCoord() { return XCOORD; }
+        String yCoord() { return YCOORD; }
+        String cctvIp() { return CCTVIP; }
+        String port() { return PORT; }
+        String channel() { return CH; }
+        String id() { return ID; }
+        String password() { return PASSWD; }
+        String kind() { return KIND; }
+        String movie() { return MOVIE; }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

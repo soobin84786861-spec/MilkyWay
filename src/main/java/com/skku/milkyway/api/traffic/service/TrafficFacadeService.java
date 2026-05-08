@@ -9,6 +9,7 @@ import com.skku.milkyway.api.traffic.domain.DistrictTrafficAggregate;
 import com.skku.milkyway.api.traffic.domain.TrafficMeasurement;
 import com.skku.milkyway.api.traffic.dto.TrafficHistoryRawDto;
 import com.skku.milkyway.api.traffic.mapper.TrafficDistrictMapper;
+import com.skku.milkyway.api.traffic.support.TrafficApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -57,13 +58,45 @@ public class TrafficFacadeService {
         List<TrafficMeasurement> measurements = new ArrayList<>();
         for (String pointId : pointIds) {
             try {
-                List<TrafficHistoryRawDto> rawHistories = trafficApiClient.fetchTrafficHistory(pointId, date, hour);
+                List<TrafficHistoryRawDto> rawHistories = fetchTrafficHistoryWithFallback(pointId, date, hour);
                 measurements.addAll(mapMeasurements(rawHistories));
             } catch (Exception e) {
                 log.warn("[Traffic] 교통량 이력 조회 실패 - {}: {}", pointId, e.getMessage());
             }
         }
         return measurements;
+    }
+
+    /**
+     * 우선 요청 시각으로 조회하고, 데이터가 없을 때만 직전 1시간으로 한 번 더 조회한다.
+     */
+    private List<TrafficHistoryRawDto> fetchTrafficHistoryWithFallback(String pointId, LocalDate date, int hour) {
+        try {
+            return trafficApiClient.fetchTrafficHistory(pointId, date, hour);
+        } catch (TrafficApiException e) {
+            if (!isNoDataException(e)) {
+                throw e;
+            }
+
+            PreviousTrafficSlot previousSlot = PreviousTrafficSlot.from(date, hour);
+            log.info(
+                    "[Traffic] 교통량 데이터 없음 - {}: date={}, hour={} -> fallback date={}, hour={}",
+                    pointId,
+                    date,
+                    hour,
+                    previousSlot.date(),
+                    previousSlot.hour()
+            );
+            return trafficApiClient.fetchTrafficHistory(pointId, previousSlot.date(), previousSlot.hour());
+        }
+    }
+
+    private boolean isNoDataException(TrafficApiException exception) {
+        String message = exception.getMessage();
+        if (message == null) {
+            return false;
+        }
+        return message.contains("INFO-200") || message.contains("해당하는 데이터가 없습니다");
     }
 
     /**
@@ -135,5 +168,17 @@ public class TrafficFacadeService {
      */
     private String normalizeKey(String key) {
         return key == null ? "" : key.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9가-힣]", "");
+    }
+
+    private record PreviousTrafficSlot(
+            LocalDate date,
+            int hour
+    ) {
+        static PreviousTrafficSlot from(LocalDate date, int hour) {
+            if (hour <= 0) {
+                return new PreviousTrafficSlot(date.minusDays(1), 23);
+            }
+            return new PreviousTrafficSlot(date, hour - 1);
+        }
     }
 }
