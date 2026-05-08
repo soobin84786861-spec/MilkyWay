@@ -25,36 +25,6 @@ public class TrafficService {
     private final TrafficFacadeService trafficFacadeService;
 
     /**
-     * 특정 자치구의 현재 평균 교통량을 반환한다.
-     */
-    public double getCurrentAverageTraffic(SeoulDistrict district) {
-        return getAllCurrentAverageTraffic().getOrDefault(district, 0.0);
-    }
-
-    /**
-     * 특정 자치구의 현재 교통량 정규화 점수를 반환한다.
-     */
-    public double getCurrentTrafficScore(SeoulDistrict district) {
-        return getAllCurrentTrafficScores().getOrDefault(district, 0.0);
-    }
-
-    /**
-     * 모든 자치구의 현재 평균 교통량을 반환한다.
-     */
-    public Map<SeoulDistrict, Double> getAllCurrentAverageTraffic() {
-        List<DistrictTrafficAggregate> aggregates = refreshCurrentTrafficSnapshot();
-        Map<SeoulDistrict, Double> averageTrafficByDistrict = new EnumMap<>(SeoulDistrict.class);
-        for (DistrictTrafficAggregate aggregate : aggregates) {
-            SeoulDistrict district = SeoulDistrict.fromKoreanName(aggregate.getDistrictName());
-            averageTrafficByDistrict.put(district, aggregate.getAvgTrafficPerPoint());
-        }
-        for (SeoulDistrict district : SeoulDistrict.values()) {
-            averageTrafficByDistrict.putIfAbsent(district, 0.0);
-        }
-        return Map.copyOf(averageTrafficByDistrict);
-    }
-
-    /**
      * 모든 자치구의 현재 교통량 정규화 점수를 반환한다.
      */
     public Map<SeoulDistrict, Double> getAllCurrentTrafficScores() {
@@ -68,16 +38,6 @@ public class TrafficService {
             trafficScoreByDistrict.putIfAbsent(district, 0.0);
         }
         return Map.copyOf(trafficScoreByDistrict);
-    }
-
-    /**
-     * 자치구별 평균 교통량들의 전체 평균값을 반환한다.
-     */
-    public double getOverallAverageTraffic() {
-        return getAllCurrentAverageTraffic().values().stream()
-                .mapToDouble(Double::doubleValue)
-                .average()
-                .orElse(0.0);
     }
 
     /**
