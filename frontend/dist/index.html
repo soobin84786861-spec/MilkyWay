@@ -3,24 +3,40 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>서울 러브버그 위험 지도</title>
+
+    <title>러브버그 위험도 지도</title>
+    <meta
+      name="description"
+      content="서울 전역의 러브버그 출몰 위험도를 실시간으로 확인하세요."
+    />
+    <link rel="canonical" href="https://lovebugmap.co.kr" />
+
+    <meta property="og:title" content="러브버그 위험도 지도" />
+    <meta
+      property="og:description"
+      content="서울 전역의 러브버그 출몰 위험도를 실시간으로 확인하세요."
+    />
+    <meta property="og:image" content="https://lovebugmap.co.kr/og-image.png" />
+    <meta property="og:url" content="https://lovebugmap.co.kr" />
+    <meta property="og:type" content="website" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+
     <!--
-      Kakao Maps SDK: index.html 에서 직접 로드하는 것이 가장 안전.
-      동적 createElement 방식은 Referer 헤더 누락으로 403이 발생할 수 있음.
-      7429bd3e2e4b90c098a585d422bd5319 → Vite가 .env 값으로 자동 치환.
+      Kakao Maps SDK는 index.html에서 직접 로드합니다.
+      동적 createElement 방식은 Referer 누락으로 403이 발생할 수 있습니다.
     -->
     <script
       type="text/javascript"
       src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7429bd3e2e4b90c098a585d422bd5319&autoload=false"
     ></script>
-    <script type="module" crossorigin src="/assets/index-Dc40bxPl.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-E_EchN-3.css">
+    <script type="module" crossorigin src="/assets/index-BC25gHqn.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DSbMTdvv.css">
   </head>
   <body>
     <div id="root"></div>
