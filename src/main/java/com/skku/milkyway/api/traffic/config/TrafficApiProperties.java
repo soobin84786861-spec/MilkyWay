@@ -16,5 +16,5 @@ public class TrafficApiProperties {
     private String historyServiceName = "";
     private int batchSize = 1000;
     private long cacheTtlMs = 60 * 60 * 1000L;
-    private String mappingFilePath = "src/main/resources/traffic/spot-district-map.json";
+    private String mappingFilePath = "classpath:traffic/spot-district-map.json";
 }
