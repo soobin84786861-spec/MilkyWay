@@ -28,11 +28,11 @@
 
     <!--
       Kakao Maps SDK는 index.html에서 직접 로드합니다.
-      동적 createElement 방식은 Referer 정책으로 403이 발생할 수 있습니다.
+      Vite HTML 환경변수 치환을 사용해 로컬 .env 값으로 키를 주입합니다.
     -->
     <script
       type="text/javascript"
-      src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=7429bd3e2e4b90c098a585d422bd5319&autoload=false"
+      src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=%VITE_KAKAO_MAP_KEY%&autoload=false"
     ></script>
   </head>
   <body>
