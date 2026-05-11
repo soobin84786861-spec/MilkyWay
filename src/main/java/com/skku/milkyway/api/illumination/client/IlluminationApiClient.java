@@ -10,7 +10,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXParseException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
@@ -102,6 +104,14 @@ public class IlluminationApiClient {
         return windowRows;
     }
 
+    private String sanitizeXml(String xml) {
+        if (xml == null || xml.isBlank()) {
+            return xml;
+        }
+
+        return xml.replaceAll("&(?!amp;|lt;|gt;|quot;|apos;|#\\d+;|#x[0-9A-Fa-f]+;)", "&amp;");
+    }
+
     /**
      * 최신 1시간 window 안에 포함되는 row만 남긴다.
      */
@@ -167,7 +177,9 @@ public class IlluminationApiClient {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(false);
             factory.setExpandEntityReferences(false);
-            return factory.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+            var builder = factory.newDocumentBuilder();
+            builder.setErrorHandler(new SilentErrorHandler());
+            return builder.parse(new InputSource(new StringReader(sanitizeXml(xml))));
         } catch (Exception e) {
             throw new IllegalStateException("조도 API XML 파싱에 실패했습니다.", e);
         }
@@ -258,6 +270,22 @@ public class IlluminationApiClient {
         }
         if (properties.getServiceName() == null || properties.getServiceName().isBlank()) {
             throw new IllegalStateException("seoul.illumination-api.service-name 설정이 비어 있습니다.");
+        }
+    }
+    private static final class SilentErrorHandler implements ErrorHandler {
+        @Override
+        public void warning(SAXParseException exception) throws SAXParseException {
+            throw exception;
+        }
+
+        @Override
+        public void error(SAXParseException exception) throws SAXParseException {
+            throw exception;
+        }
+
+        @Override
+        public void fatalError(SAXParseException exception) throws SAXParseException {
+            throw exception;
         }
     }
 }

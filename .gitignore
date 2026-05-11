@@ -6,6 +6,12 @@ build/
 !**/src/test/**/build/
 frontend/node_modules/
 frontend/dist/
+frontend/.vite/
+frontend/*.tsbuildinfo
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
 .claude
 
 ### STS ###

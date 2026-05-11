@@ -64,7 +64,6 @@ public class TrafficApiClient {
             int endIndex = startIndex + batchSize - 1;
             String url = buildUrl(serviceName, startIndex, endIndex, extraSegments);
 
-            System.out.println("url : " + url);
             String xml = restTemplate.getForObject(url, String.class);
             if (xml == null || xml.isBlank()) {
                 throw new TrafficApiException("교통량 API 응답이 비어 있습니다: " + url);
