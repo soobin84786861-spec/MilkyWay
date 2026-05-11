@@ -6,7 +6,8 @@ export default defineConfig({
   server: {
     port: 5173,
     allowedHosts: [
-      'dev-milkyway-alb-746196076.ap-northeast-2.elb.amazonaws.com'
+        'lovebugmap.co.kr',
+        'www.lovebugmap.co.kr'
     ],
     proxy: {
       '/api': {
