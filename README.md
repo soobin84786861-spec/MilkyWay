@@ -14,161 +14,146 @@
 
 </div>
 
----
+서울 전역의 러브버그 출몰 위험도를 지도에서 확인할 수 있는 웹 서비스입니다.  
+자치구별 위험도, AI 요약, CCTV 확인, 과거 시즌 가중치까지 한 화면에서 볼 수 있도록 구성되어 있습니다.
 
-## 🌌 프로젝트 소개
+- 배포 주소: [https://lovebugmap.co.kr](https://lovebugmap.co.kr)
+- 프론트엔드: React 18, TypeScript, Vite, Tailwind CSS
+- 백엔드: Spring Boot, Java 17
 
-**MilkyWay**는 인스타그램 크롤링 데이터를 기반으로 서울 25개 자치구의 **러브버그(사랑벌레) 출몰 위험도**를 실시간으로 산출하고, **카카오맵 위에 직관적인 오버레이**로 시각화하는 웹 서비스입니다.
+## 주요 기능
 
-> *"사랑벌레가 어디에 있는지, 지도 위에서 한눈에."*
+- 자치구별 러브버그 위험도 지도
+- `전체 / 주의 / 위험 / 매우위험` 필터
+- 위험 지역 TOP 5 위젯
+- 자치구 상세 패널
+  - 현재 위험도
+  - 기온, 습도, 풍속, 조도
+  - AI 요약
+  - 행동 가이드
+- CCTV 보기
+  - UTIC CCTV 모달 뷰어
+- 과거 시즌 보정
+  - `A / B / C` 시즌 등급 기반 현재 위험도 보정
+- 모바일 반응형 UI
 
----
+## 위험도 계산 개요
 
-## ✨ 주요 기능
+현재 위험도는 아래 데이터들을 조합해 계산합니다.
 
-| 기능 | 설명 |
-|------|------|
-| 🗺️ **실시간 위험도 지도** | 카카오맵 위에 자치구별 위험 등급을 색상 오버레이로 표시 |
-| 📊 **위험도 TOP 5 랭킹** | 현재 가장 위험한 자치구 순위를 실시간 제공 |
-| 🔍 **필터 탭** | 전체 / 주의 / 위험 / 매우위험 등급별 필터링 |
-| 📋 **자치구 상세 패널** | 기온, 습도, 행동 요령, AI 분석 결과 표시 |
-| ⏱️ **1시간 주기 자동 갱신** | Instagram 크롤러가 매 시간 최신 데이터 수집 |
+- 기상청 단기예보/실황
+- 서울시 S-DoT 조도 데이터
+- 서울시 교통량 이력 데이터
+- 자치구별 공원/녹지 기반 서식지 계수
+- 과거 3개년 시즌 데이터
 
----
+과거 시즌 데이터는 `src/main/resources/pastData/data.json`을 기준으로 날짜별 시즌 등급을 계산해 현재 위험도에 보정값으로 반영합니다.
 
-## 🎨 위험 등급 체계
+- `A`: `finalRisk = baseRisk`
+- `B`: `finalRisk = baseRisk * 0.8`
+- `C`: `finalRisk = baseRisk * 0.2`
 
-```
-  SAFE      CAUTION      DANGER      CRITICAL
-  🟢 안전    🟡 주의      🔴 위험     💀 매우위험
-```
+## 사용 데이터
 
-| 등급 | 색상 | 설명 |
-|------|------|------|
-| `SAFE` | 🟢 초록 | 출몰 없음 — 안심 |
-| `CAUTION` | 🟡 노랑 | 소수 목격 — 주의 권고 |
-| `DANGER` | 🔴 빨강 | 다수 출몰 — 야외 활동 자제 |
-| `CRITICAL` | ⬛ 검정 | 대규모 출몰 — 외출 최소화 |
+### 서울 열린데이터광장
 
----
+- 스마트서울 도시데이터 센서(S-DoT) 환경정보
+- 서울시 교통량 이력 정보
+- 서울시 자치구별 공원현황
 
-## 🏗️ 기술 스택
+### 공공데이터포털
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                       Frontend                          │
-│     React 18 · TypeScript · Vite · Tailwind CSS        │
-│                   Kakao Maps SDK                        │
-├─────────────────────────────────────────────────────────┤
-│                       Backend                           │
-│        Spring Boot 4.0.5 · Java 17 · Lombok            │
-│             Spring AI (LLM 연동 예정)                   │
-├─────────────────────────────────────────────────────────┤
-│                    Data Pipeline                        │
-│       Instagram Crawler → InMemory Store → REST API    │
-├─────────────────────────────────────────────────────────┤
-│                     Database                            │
-│                   MySQL (연동 예정)                      │
-└─────────────────────────────────────────────────────────┘
-```
+- 기상청_단기예보 조회서비스
 
----
+### 경찰청 도시교통정보센터(UTIC)
 
-## 📁 프로젝트 구조
+- CCTV 정보 / CCTV 스트림 조회
 
-```
+## 프로젝트 구조
+
+```text
 MilkyWay/
-├── src/main/java/com/skku/milkyway/
-│   ├── MilkyWayApplication.java
-│   ├── api/
-│   │   ├── instagram/
-│   │   │   ├── config/       InstagramProperties.java
-│   │   │   ├── dto/          InstagramPostDto.java
-│   │   │   ├── scheduler/    InstagramCountScheduler.java  ← 매 1시간
-│   │   │   ├── service/      InstagramCrawlerService (인터페이스)
-│   │   │   │                 DummyInstagramCrawlerService  ← 현재
-│   │   │   │                 RealInstagramCrawlerService   ← 예정
-│   │   │   │                 InstagramDistrictCountService
-│   │   │   └── store/        InstagramCountStore.java
-│   │   └── risk/
-│   │       ├── code/         RiskLevel.java · SeoulDistrict.java
-│   │       ├── controller/   RiskController.java
-│   │       ├── response/     RegionRiskResponse.java
-│   │       └── service/      RiskService.java
-│   └── config/
-│       └── SchedulingConfig.java
-│
-└── frontend/
-    └── src/
-        ├── App.tsx               ← 메인 레이아웃 · 상태 관리
-        ├── api/riskApi.ts        ← 백엔드 API 호출
-        ├── components/
-        │   ├── KakaoMap.tsx      ← 지도 + 커스텀 오버레이
-        │   ├── DetailPanel.tsx   ← 자치구 상세
-        │   ├── Top5Panel.tsx     ← 위험도 랭킹
-        │   ├── TopNav.tsx        ← 필터 탭
-        │   ├── Legend.tsx        ← 범례
-        │   └── RiskBadge.tsx     ← 등급 배지
-        ├── data/mockData.ts
-        ├── types/index.ts
-        └── utils/riskUtils.ts
+├─ src/main/java/com/skku/milkyway/api/
+│  ├─ ai/
+│  ├─ cctv/
+│  ├─ forest/
+│  ├─ illumination/
+│  ├─ risk/
+│  ├─ traffic/
+│  └─ weather/
+├─ src/main/resources/
+│  ├─ cctv/
+│  ├─ forest/
+│  ├─ pastData/
+│  └─ traffic/
+└─ frontend/
+   ├─ public/
+   └─ src/
 ```
 
----
+## 로컬 실행
 
-## 🔄 데이터 파이프라인
+### 1. 백엔드 설정 파일 준비
 
-```
-Instagram (#러브버그)
-        │
-        ▼  매 1시간 (cron: "0 0 * * * *")
-InstagramCountScheduler
-        │
-        ▼
-InstagramCrawlerService
-  ├── DummyInstagramCrawlerService  (현재 — 더미 데이터)
-  └── RealInstagramCrawlerService   (예정 — 실제 크롤링)
-        │
-        ▼
-InstagramDistrictCountService
-  → 자치구별 게시물 수 집계
-        │
-        ▼
-InstagramCountStore  (인메모리 캐시)
-        │
-        ▼
-RiskService.getRegions()
-        │
-        ▼
-GET /api/risk/regions  →  Frontend
-```
+`src/main/resources/application.properties`는 `.gitignore`에 포함되어 있어 저장소에 올라가지 않습니다.  
+팀원은 각자 로컬에 파일을 만들어서 아래 값을 채워야 합니다.
 
----
-
-## 🚀 로컬 실행 방법
-
-### 1. 환경 변수 설정
-
-**`src/main/resources/application.properties`**
 ```properties
-instagram.session-id=<Instagram sessionid 쿠키>
-instagram.csrf-token=<Instagram csrftoken 쿠키>
+spring.application.name=MilkyWay
+server.port=8080
+
+# UTIC CCTV open data
+utic.cctv-open-data.key=
+
+# KMA weather API
+kma.api-key=
+
+# Seoul illumination API
+seoul.illumination-api.api-key=
+seoul.illumination-api.base-url=http://openapi.seoul.go.kr:8088
+seoul.illumination-api.service-name=sDoTEnv
+seoul.illumination-api.batch-size=1000
+seoul.illumination-api.cache-ttl-ms=3600000
+
+# Seoul traffic API
+seoul.traffic-api.api-key=
+seoul.traffic-api.base-url=http://openapi.seoul.go.kr:8088
+seoul.traffic-api.history-service-name=VolInfo
+seoul.traffic-api.batch-size=1000
+seoul.traffic-api.cache-ttl-ms=3600000
+seoul.traffic-api.mapping-file-path=classpath:traffic/spot-district-map.json
+
+# Spring AI (optional)
+spring.ai.google.genai.api-key=
+spring.ai.google.genai.chat.options.model=gemini-2.5-flash
 ```
 
-**`frontend/.env`** (`.env.example` 참고)
+### 2. 프론트엔드 환경변수 준비
+
+`frontend/.env` 파일을 만들고 카카오 지도 키를 넣습니다.
+
 ```env
-VITE_KAKAO_MAP_KEY=<카카오 JavaScript 앱 키>
+VITE_KAKAO_MAP_KEY=
 ```
 
-> 카카오 개발자 콘솔 → 앱 설정 → 플랫폼 → Web에 `http://localhost:5173` 등록 필요
+참고:
 
-### 2. 백엔드 실행 (포트 8080)
+- 예시 파일: [frontend/.env.example](C:/Users/soobi/git/MilkyWay/frontend/.env.example)
+- 카카오 지도 도메인 등록 시 `http://localhost:5173`를 포함해야 합니다.
+
+### 3. 백엔드 실행
 
 ```bash
 ./gradlew bootRun
 ```
 
-### 3. 프론트엔드 실행 (포트 5173)
+Windows PowerShell:
+
+```powershell
+.\gradlew.bat bootRun
+```
+
+### 4. 프론트엔드 실행
 
 ```bash
 cd frontend
@@ -176,23 +161,22 @@ npm install
 npm run dev
 ```
 
-> Vite가 `/api/**` 요청을 자동으로 `http://localhost:8080`에 프록시합니다.
+기본 개발 주소:
 
----
+- 프론트엔드: `http://localhost:5173`
+- 백엔드: `http://localhost:8080`
 
-## 📡 REST API
+## 주요 API
 
 ### `GET /api/risk/regions`
 
-서울 자치구별 위험도 목록을 반환합니다.
+자치구별 위험도 목록을 반환합니다.
 
-**Query Parameters**
+Query parameter:
 
-| 파라미터 | 타입 | 필수 | 설명 |
-|----------|------|------|------|
-| `riskLevel` | `SAFE \| CAUTION \| DANGER \| CRITICAL` | 선택 | 등급 필터 (없으면 전체 반환) |
+- `riskLevel=SAFE|CAUTION|DANGER|CRITICAL`
 
-**Response Example**
+응답 예시:
 
 ```json
 [
@@ -201,34 +185,41 @@ npm run dev
     "latitude": 37.517,
     "longitude": 127.047,
     "riskLevel": "CRITICAL",
-    "riskPercent": 89,
-    "instaCnt": 142
+    "riskPercent": 89
   }
 ]
 ```
 
----
+### `GET /api/cctv`
 
-## 🛣️ 로드맵
+서울 CCTV 목록을 반환합니다.
 
-- [x] 더미 데이터 기반 위험도 시각화
-- [x] 카카오맵 자치구 오버레이
-- [x] 위험도 필터 & TOP 5 랭킹
-- [ ] Instagram 실제 크롤러 연동
-- [ ] MySQL 데이터베이스 연결
-- [ ] Spring AI 기반 LLM 분석 코멘트
-- [ ] 시간대별 위험도 추이 그래프
+### `GET /api/cctv/{cctvId}/stream`
 
----
+선택한 CCTV 스트림 페이지를 반환합니다.
 
-## 👥 팀
+## 프론트엔드 메타/배포 파일
 
-**SKKU MilkyWay Team** — 성균관대학교
+프론트엔드에는 공유 및 SEO용 정적 파일이 포함되어 있습니다.
 
----
+- [frontend/index.html](C:/Users/soobi/git/MilkyWay/frontend/index.html)
+  - title
+  - description
+  - canonical
+  - Open Graph 메타태그
+- [frontend/public/og-image.png](C:/Users/soobi/git/MilkyWay/frontend/public/og-image.png)
+- [frontend/public/robots.txt](C:/Users/soobi/git/MilkyWay/frontend/public/robots.txt)
+- [frontend/public/favicon.svg](C:/Users/soobi/git/MilkyWay/frontend/public/favicon.svg)
 
-<div align="center">
+## 참고 사항
 
-Made with ❤️ and a lot of ☕ for the 2026 서울시 빅데이터 활용 경진대회
+- 교통량 이력 API 서비스명은 `VolInfo`를 사용합니다.
+- 교통량 지점-자치구 매핑은 `classpath:traffic/spot-district-map.json`을 사용합니다.
+- UTIC CCTV는 신청된 IP 대역과 발급 키가 맞아야 정상 동작합니다.
+- `frontend/dist`는 빌드 산출물이며 배포 시 생성됩니다.
 
-</div>
+## 팀 메모
+
+- 실제 API 키는 git에 올리지 않습니다.
+- `application.properties`는 팀 내부에서 별도로 공유합니다.
+- README는 현재 구현 기준 문서이며, 데이터 소스나 실행 방식이 바뀌면 함께 갱신합니다.
