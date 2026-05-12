@@ -11,12 +11,12 @@ import com.skku.milkyway.api.weather.dto.WeatherResponse;
 import com.skku.milkyway.api.weather.service.WeatherService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,6 @@ public class RiskService {
     private final TrafficService trafficService;
     private final ForestAreaService forestAreaService;
     private final PastSeasonService pastSeasonService;
-    private final RiskAnalysisExcelService riskAnalysisExcelService;
 
     private volatile RiskSnapshot riskSnapshot = RiskSnapshot.empty();
 
@@ -67,14 +66,42 @@ public class RiskService {
      * 전체 위험도 계산 결과를 캐시에 보관하고, 만료 시에만 다시 계산한다.
      */
     private List<RegionRiskResponse> getCachedData() {
-        if (riskSnapshot.isExpired()) {
-            synchronized (this) {
-                if (riskSnapshot.isExpired()) {
-                    riskSnapshot = new RiskSnapshot(buildData(), LocalDateTime.now());
-                }
-            }
+        if (riskSnapshot.isEmpty()) {
+            log.warn("[Risk] 메모리 스냅샷이 비어 있어 즉시 갱신합니다.");
+            refreshSnapshot();
         }
         return riskSnapshot.data();
+    }
+
+    @Scheduled(
+        fixedDelayString = "${risk.snapshot.refresh-ms:180000}",
+        initialDelayString = "${risk.snapshot.refresh-ms:180000}"
+    )
+    public void refreshSnapshotOnSchedule() {
+        refreshSnapshot();
+    }
+
+    public synchronized List<RegionRiskResponse> refreshSnapshot() {
+        long startedAt = System.currentTimeMillis();
+        boolean hadSnapshot = !riskSnapshot.isEmpty();
+        log.info("[Risk] 메모리 스냅샷 갱신 시작 - hadSnapshot={}", hadSnapshot);
+
+        try {
+            List<RegionRiskResponse> data = buildData();
+            riskSnapshot = new RiskSnapshot(data, LocalDateTime.now());
+            log.info(
+                    "[Risk] 메모리 스냅샷 갱신 완료 - districts={}, elapsed={}ms",
+                    data.size(),
+                    System.currentTimeMillis() - startedAt
+            );
+            return data;
+        } catch (RuntimeException e) {
+            if (hadSnapshot) {
+                log.error("[Risk] 메모리 스냅샷 갱신 실패 - 기존 스냅샷 유지: {}", e.getMessage(), e);
+                return riskSnapshot.data();
+            }
+            throw e;
+        }
     }
 
     /**
@@ -310,12 +337,8 @@ public class RiskService {
             return new RiskSnapshot(List.of(), null);
         }
 
-        boolean isExpired() {
-            if (updatedAt == null || data.isEmpty()) {
-                return true;
-            }
-            long ageMs = ChronoUnit.MILLIS.between(updatedAt, LocalDateTime.now());
-            return ageMs > 30 * 60 * 1000L;
+        boolean isEmpty() {
+            return updatedAt == null || data.isEmpty();
         }
     }
 }
