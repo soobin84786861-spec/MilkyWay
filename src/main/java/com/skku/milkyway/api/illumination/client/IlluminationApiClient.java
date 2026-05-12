@@ -1,9 +1,10 @@
 package com.skku.milkyway.api.illumination.client;
 
 import com.skku.milkyway.api.illumination.config.IlluminationApiProperties;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.w3c.dom.Document;
@@ -27,7 +28,6 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class IlluminationApiClient {
 
     private static final String SENSING_TIME_FIELD = "sensing_time";
@@ -38,7 +38,12 @@ public class IlluminationApiClient {
     };
 
     private final IlluminationApiProperties properties;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+
+    public IlluminationApiClient(IlluminationApiProperties properties) {
+        this.properties = properties;
+        this.restTemplate = buildRestTemplate(properties);
+    }
 
     /**
      * 최근 1시간 window에 해당하는 조도 row를 조회한다.
@@ -57,7 +62,8 @@ public class IlluminationApiClient {
 
         while (totalCount == null || startIndex <= totalCount) {
             int endIndex = startIndex + batchSize - 1;
-            String xml = restTemplate.getForObject(buildUrl(startIndex, endIndex), String.class);
+            String url = buildUrl(startIndex, endIndex);
+            String xml = fetchXml(url, startIndex, endIndex, totalCount);
             if (xml == null || xml.isBlank()) {
                 throw new IllegalStateException("조도 API 응답이 비어 있습니다.");
             }
@@ -102,6 +108,32 @@ public class IlluminationApiClient {
                 System.currentTimeMillis() - startedAt
         );
         return windowRows;
+    }
+
+    private String fetchXml(String url, int startIndex, int endIndex, Integer totalCount) {
+        log.info(
+                "[IlluminationAPI] 조도 API 배치 조회 - serviceName={}, startIndex={}, endIndex={}, totalCount={}",
+                properties.getServiceName(),
+                startIndex,
+                endIndex,
+                totalCount
+        );
+        try {
+            return restTemplate.getForObject(url, String.class);
+        } catch (RestClientException e) {
+            throw new IllegalStateException(
+                    "조도 API 호출 실패 - serviceName=%s, startIndex=%d, endIndex=%d, url=%s"
+                            .formatted(properties.getServiceName(), startIndex, endIndex, url),
+                    e
+            );
+        }
+    }
+
+    private RestTemplate buildRestTemplate(IlluminationApiProperties properties) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Math.max(1, properties.getConnectTimeoutMs()));
+        requestFactory.setReadTimeout(Math.max(1, properties.getReadTimeoutMs()));
+        return new RestTemplate(requestFactory);
     }
 
     private String sanitizeXml(String xml) {

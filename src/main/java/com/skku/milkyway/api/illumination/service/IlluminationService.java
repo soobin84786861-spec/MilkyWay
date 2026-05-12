@@ -49,7 +49,13 @@ public class IlluminationService {
         long startedAt = System.currentTimeMillis();
         log.info("[Illumination] 조도 스냅샷 갱신 시작");
 
-        List<Map<String, String>> rows = illuminationApiClient.fetchRows();
+        List<Map<String, String>> rows;
+        try {
+            rows = illuminationApiClient.fetchRows();
+        } catch (RuntimeException e) {
+            log.warn("[Illumination] 조도 스냅샷 갱신 실패 - fallback 사용: {}", e.getMessage());
+            return emptyIlluminationMap();
+        }
         LocalDateTime latestSensingTime = rows.stream()
                 .map(row -> parseSensingTime(row.get(SENSING_TIME_FIELD)))
                 .filter(value -> value != null)
@@ -150,6 +156,14 @@ public class IlluminationService {
                 System.currentTimeMillis() - startedAt
         );
 
+        return Map.copyOf(values);
+    }
+
+    private Map<SeoulDistrict, Double> emptyIlluminationMap() {
+        Map<SeoulDistrict, Double> values = new EnumMap<>(SeoulDistrict.class);
+        for (SeoulDistrict district : SeoulDistrict.values()) {
+            values.put(district, 0.0);
+        }
         return Map.copyOf(values);
     }
 
