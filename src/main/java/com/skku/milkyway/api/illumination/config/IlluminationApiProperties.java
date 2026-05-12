@@ -15,7 +15,6 @@ public class IlluminationApiProperties {
     private String baseUrl = "http://openapi.seoul.go.kr:8088";
     private String serviceName = "sDoTEnv";
     private int batchSize = 1000;
-    private long cacheTtlMs = 60 * 60 * 1000L;
     private int connectTimeoutMs = 5_000;
     private int readTimeoutMs = 20_000;
 }

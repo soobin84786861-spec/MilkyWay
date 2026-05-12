@@ -15,6 +15,5 @@ public class TrafficApiProperties {
     private String baseUrl = "http://openapi.seoul.go.kr:8088";
     private String historyServiceName = "";
     private int batchSize = 1000;
-    private long cacheTtlMs = 60 * 60 * 1000L;
     private String mappingFilePath = "classpath:traffic/spot-district-map.json";
 }
