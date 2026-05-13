@@ -1,6 +1,7 @@
 package com.skku.milkyway.api.risk.controller;
 
 import com.skku.milkyway.api.ai.dto.AiRiskAnalysisResponse;
+import com.skku.milkyway.api.ai.dto.DefaultRegionRiskAnalysisResponse;
 import com.skku.milkyway.api.ai.service.AiRiskAnalysisService;
 import com.skku.milkyway.api.code.SeoulDistrict;
 import com.skku.milkyway.api.code.RiskLevel;
@@ -31,5 +32,10 @@ public class RiskController {
     @GetMapping("/regions/{district}")
     public AiRiskAnalysisResponse getRegionAnalysis(@PathVariable SeoulDistrict district) {
         return aiRiskAnalysisService.getAnalysis(district);
+    }
+
+    @GetMapping("/regions/{district}/default")
+    public DefaultRegionRiskAnalysisResponse getDefaultRegionAnalysis(@PathVariable SeoulDistrict district) {
+        return aiRiskAnalysisService.getDefaultAnalysis(district);
     }
 }

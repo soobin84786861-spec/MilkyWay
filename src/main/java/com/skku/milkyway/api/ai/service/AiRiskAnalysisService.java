@@ -1,6 +1,7 @@
 package com.skku.milkyway.api.ai.service;
 
 import com.skku.milkyway.api.ai.dto.AiRiskAnalysisResponse;
+import com.skku.milkyway.api.ai.dto.DefaultRegionRiskAnalysisResponse;
 import com.skku.milkyway.api.code.SeoulDistrict;
 import com.skku.milkyway.api.risk.response.RegionRiskResponse;
 import com.skku.milkyway.api.risk.service.RiskService;
@@ -26,6 +27,7 @@ public class AiRiskAnalysisService {
     private static final long CACHE_TTL_MS = 60 * 60 * 1000L;
     private static final String SYSTEM_PROMPT_PATH = "prompts/ai-risk-system.st";
     private static final String USER_PROMPT_PATH = "prompts/ai-risk-user.st";
+    private static final String DEFAULT_PROMPT_PATH = "prompts/ai-risk-default.st";
     private static final List<LifeStageContext> LIFE_STAGE_CONTEXTS = List.of(
             new LifeStageContext(1, 6, "유충기",
                     "현재는 러브버그가 땅속 또는 서식 환경에서 자라는 시기다. 성충 출몰은 보통 6월 중순 이후부터 시작되므로, 환경 조건은 유리해도 실제 대량 출몰 시점은 아직 아닐 수 있다."),
@@ -144,6 +146,75 @@ public class AiRiskAnalysisService {
         return result;
     }
 
+    public DefaultRegionRiskAnalysisResponse getDefaultAnalysis(SeoulDistrict district) {
+        RegionRiskResponse region = riskService.getRegion(district);
+        TimeAdviceContext timeAdviceContext = resolveTimeAdviceContext(LocalTime.now());
+        LifeStageContext lifeStageContext = resolveLifeStageContext(java.time.LocalDate.now().getMonthValue());
+        String prompt = renderTemplate(DEFAULT_PROMPT_PATH, Map.ofEntries(
+                Map.entry("jsonSchema", """
+                        {
+                          "type": "object",
+                          "properties": {
+                            "summary": { "type": "string" },
+                            "comfortMessage": { "type": "string" },
+                            "timeAdvice": { "type": "string" }
+                          },
+                          "required": ["summary", "comfortMessage", "timeAdvice"],
+                          "additionalProperties": false
+                        }
+                        """),
+                Map.entry("district", district.getKoreanName()),
+                Map.entry("riskPercent", region.getRiskPercent()),
+                Map.entry("riskLevel", region.getRiskLevel().getKoreanName()),
+                Map.entry("temperature", region.getTemperature()),
+                Map.entry("humidity", region.getHumidity()),
+                Map.entry("illumination", region.getIllumination()),
+                Map.entry("sky", region.getSky().getCode()),
+                Map.entry("precipitationType", region.getPrecipitationType().getCode()),
+                Map.entry("windSpeedMph", round(toMph(region.getWindSpeed()))),
+                Map.entry("weatherIndex", region.getWeatherIndex()),
+                Map.entry("habitatFactor", region.getHabitatFactor()),
+                Map.entry("trafficFactor", region.getTrafficFactor()),
+                Map.entry("riskIndex", region.getRiskIndex()),
+                Map.entry("instaCnt", region.getInstaCnt()),
+                Map.entry("timeSlotLabel", timeAdviceContext.label()),
+                Map.entry("timeAdviceSeed", timeAdviceContext.seed()),
+                Map.entry("currentMonth", java.time.LocalDate.now().getMonthValue()),
+                Map.entry("lifeStage", lifeStageContext.label()),
+                Map.entry("lifeStageContext", lifeStageContext.context())
+        ));
+
+        DefaultPromptResponse promptResponse;
+        try {
+            promptResponse = chatClient.prompt()
+                    .advisors(AdvisorParams.ENABLE_NATIVE_STRUCTURED_OUTPUT)
+                    .user(prompt)
+                    .call()
+                    .entity(DefaultPromptResponse.class);
+        } catch (RuntimeException e) {
+            log.error("[AI] default response generation failed - {}", district, e);
+            promptResponse = fallbackDefaultPromptResponse(region);
+        }
+
+        return new DefaultRegionRiskAnalysisResponse(
+                region.getDistrictCode(),
+                region.getRegionName(),
+                region.getRiskLevel(),
+                region.getRiskPercent(),
+                new DefaultRegionRiskAnalysisResponse.EvidenceData(
+                        region.getTemperature(),
+                        region.getHumidity(),
+                        region.getIllumination(),
+                        region.getSky().getCode(),
+                        region.getPrecipitationType().getCode(),
+                        region.getWindSpeed()
+                ),
+                promptResponse.summary(),
+                promptResponse.comfortMessage(),
+                promptResponse.timeAdvice()
+        );
+    }
+
     private LifeStageContext resolveLifeStageContext(int month) {
         return LIFE_STAGE_CONTEXTS.stream()
                 .filter(context -> context.matches(month))
@@ -190,11 +261,26 @@ public class AiRiskAnalysisService {
         );
     }
 
+    private DefaultPromptResponse fallbackDefaultPromptResponse(RegionRiskResponse region) {
+        return new DefaultPromptResponse(
+                "현재 " + region.getRegionName() + "의 러브버그 발생 위험도는 " + region.getRiskPercent() + "% 수준입니다.",
+                "현재 수치를 기준으로 과도한 불안보다는 기본적인 대비를 유지하면 충분합니다.",
+                "현재 시간대에는 야외 체류 전후로 옷과 창문 주변 상태를 한 번 더 확인해 주세요."
+        );
+    }
+
     private double toMph(double metersPerSecond) {
         return metersPerSecond * 2.23694;
     }
 
     private double round(double value) {
         return Math.round(value * 100.0) / 100.0;
+    }
+
+    private record DefaultPromptResponse(
+            String summary,
+            String comfortMessage,
+            String timeAdvice
+    ) {
     }
 }

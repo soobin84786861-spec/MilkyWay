@@ -63,6 +63,18 @@ function createMarkerContent(district: District, isSelected: boolean): string {
   `;
 }
 
+function createDistrictMarkerElement(
+  district: District,
+  isSelected: boolean,
+  onDistrictClick: (district: District) => void
+): HTMLDivElement {
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = createMarkerContent(district, isSelected).trim();
+  const element = wrapper.firstElementChild as HTMLDivElement;
+  element.addEventListener('click', () => onDistrictClick(district));
+  return element;
+}
+
 const boundaries = seoulBoundaries as Record<string, { lat: number; lng: number }[]>;
 
 function ensureCctvMarkerStyles() {
@@ -196,9 +208,11 @@ export default function KakaoMap({
     overlaysRef.current.forEach((overlay, id) => {
       const district = districts.find((d) => d.id === id);
       if (!district) return;
-      overlay.setContent(createMarkerContent(district, selectedDistrict?.id === id));
+      overlay.setContent(
+        createDistrictMarkerElement(district, selectedDistrict?.id === id, onDistrictClick)
+      );
     });
-  }, [districts, selectedDistrict]);
+  }, [districts, onDistrictClick, selectedDistrict]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -255,18 +269,11 @@ export default function KakaoMap({
     districtList.forEach((district) => {
       const overlay = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(district.lat, district.lng),
-        content: createMarkerContent(district, false),
+        content: createDistrictMarkerElement(district, false, onDistrictClick),
         yAnchor: 0.5,
         xAnchor: 0.5,
       });
       overlay.setMap(mapRef.current);
-
-      setTimeout(() => {
-        const element = overlay.getContent();
-        if (element && typeof element !== 'string') {
-          (element as HTMLElement).addEventListener('click', () => onDistrictClick(district));
-        }
-      }, 0);
 
       overlaysRef.current.set(district.id, overlay);
     });

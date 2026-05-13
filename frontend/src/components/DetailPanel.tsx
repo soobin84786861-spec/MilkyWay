@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
+import { DefaultRegionRiskAnalysisResponse, fetchDefaultRegionRiskAnalysis } from '../api/riskApi';
 import { District } from '../types';
 import { RISK_TEXT_CLASS, getRiskBarColor } from '../utils/riskUtils';
 import RiskBadge from './RiskBadge';
-import { AiRiskAnalysisResponse, fetchAiRiskAnalysis } from '../api/riskApi';
 
 interface Props {
   district: District | null;
@@ -20,28 +20,42 @@ const PTY: Record<number, { label: string; icon: string }> = {
   1: { label: '비', icon: '🌧️' },
   2: { label: '비/눈', icon: '🌨️' },
   3: { label: '눈', icon: '❄️' },
-  5: { label: '빗방울', icon: '🌦️' },
+  5: { label: '빗방울', icon: '💧' },
   6: { label: '빗방울/눈날림', icon: '🌨️' },
   7: { label: '눈날림', icon: '🌬️' },
 };
 
 export default function DetailPanel({ district, onClose }: Props) {
-  const [aiData, setAiData] = useState<AiRiskAnalysisResponse | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState(false);
-  const showHighRiskSections =
-    district?.riskLevel === 'DANGER' || district?.riskLevel === 'CRITICAL';
+  const [detailData, setDetailData] = useState<DefaultRegionRiskAnalysisResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (!district) return;
-    setAiData(null);
-    setAiError(false);
-    setAiLoading(true);
-    fetchAiRiskAnalysis(district.districtCode)
-      .then(setAiData)
-      .catch(() => setAiError(true))
-      .finally(() => setAiLoading(false));
+    if (!district) {
+      setDetailData(null);
+      setError(false);
+      setLoading(false);
+      return;
+    }
+
+    setDetailData(null);
+    setError(false);
+    setLoading(true);
+
+    fetchDefaultRegionRiskAnalysis(district.districtCode)
+      .then(setDetailData)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, [district?.districtCode]);
+
+  const riskLevel = detailData?.riskLevel ?? district?.riskLevel;
+  const probability = detailData?.riskPercent ?? district?.probability ?? 0;
+  const evidenceData = detailData?.evidenceData;
+  const temperature = evidenceData?.temperature ?? district?.temperature ?? 0;
+  const humidity = evidenceData?.humidity ?? district?.humidity ?? 0;
+  const sky = evidenceData?.sky ?? district?.sky ?? 1;
+  const precipitationType = evidenceData?.precipitationType ?? district?.precipitationType ?? 0;
+  const windSpeed = evidenceData?.windSpeed ?? district?.windSpeed ?? 0;
 
   return (
     <div
@@ -65,7 +79,7 @@ export default function DetailPanel({ district, onClose }: Props) {
               <div className="flex min-w-0 items-center gap-2">
                 <span className="text-slate-500">📍</span>
                 <h2 className="truncate text-base font-bold text-slate-800 md:text-lg">
-                  {district.name}
+                  {detailData?.regionName ?? district.name}
                 </h2>
               </div>
               <button
@@ -81,22 +95,22 @@ export default function DetailPanel({ district, onClose }: Props) {
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                   발생 위험도
                 </p>
-                <RiskBadge level={district.riskLevel} size="lg" />
+                {riskLevel ? <RiskBadge level={riskLevel} size="lg" /> : null}
               </section>
 
               <section>
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                   러브버그 발생 확률
                 </p>
-                <p className={`text-4xl font-extrabold ${RISK_TEXT_CLASS[district.riskLevel]}`}>
-                  {district.probability}%
+                <p className={`text-4xl font-extrabold ${riskLevel ? RISK_TEXT_CLASS[riskLevel] : ''}`}>
+                  {probability}%
                 </p>
                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
-                      width: `${district.probability}%`,
-                      backgroundColor: getRiskBarColor(district.riskLevel),
+                      width: `${probability}%`,
+                      backgroundColor: riskLevel ? getRiskBarColor(riskLevel) : undefined,
                     }}
                   />
                 </div>
@@ -108,23 +122,23 @@ export default function DetailPanel({ district, onClose }: Props) {
                 </p>
                 <div className="space-y-2">
                   {[
-                    { icon: '🌡️', label: '온도', value: `${district.temperature}°C` },
-                    { icon: '💧', label: '습도', value: `${district.humidity}%` },
+                    { icon: '🌡️', label: '온도', value: `${temperature}°C` },
+                    { icon: '💧', label: '습도', value: `${humidity}%` },
                     {
-                      icon: (SKY[district.sky] ?? SKY[1]).icon,
+                      icon: (SKY[sky] ?? SKY[1]).icon,
                       label: '하늘상태',
-                      value: (SKY[district.sky] ?? SKY[1]).label,
+                      value: (SKY[sky] ?? SKY[1]).label,
                     },
-                    ...(district.precipitationType !== 0
+                    ...((precipitationType ?? 0) !== 0
                       ? [
                           {
-                            icon: (PTY[district.precipitationType] ?? PTY[0]).icon,
-                            label: '강수형태',
-                            value: (PTY[district.precipitationType] ?? PTY[0]).label,
+                            icon: (PTY[precipitationType] ?? PTY[0]).icon,
+                            label: '강수상태',
+                            value: (PTY[precipitationType] ?? PTY[0]).label,
                           },
                         ]
                       : []),
-                    { icon: '🌬️', label: '풍속', value: `${district.windSpeed.toFixed(1)} m/s` },
+                    { icon: '🌬️', label: '풍속', value: `${windSpeed.toFixed(1)} m/s` },
                   ].map(({ icon, label, value }) => (
                     <div
                       key={label}
@@ -148,72 +162,34 @@ export default function DetailPanel({ district, onClose }: Props) {
                   </p>
                 </div>
 
-                {aiLoading && (
+                {loading && (
                   <div className="flex items-center gap-2 px-1 text-sm text-amber-600">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-300 border-t-amber-600" />
                     <span>AI 분석 중...</span>
                   </div>
                 )}
 
-                {aiError && !aiLoading && (
+                {error && !loading && (
                   <p className="px-1 text-sm text-slate-400">AI 분석을 불러오지 못했습니다.</p>
                 )}
 
-                {aiData && !aiLoading && (
+                {detailData && !loading && (
                   <div className="space-y-3">
-                    <p className="text-sm leading-relaxed text-slate-700">{aiData.summary}</p>
+                    <p className="text-sm leading-relaxed text-slate-700">{detailData.summary}</p>
 
                     <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
                       <span className="flex-shrink-0 text-base">💚</span>
                       <p className="text-sm font-medium leading-relaxed text-emerald-800">
-                        {aiData.comfortMessage}
+                        {detailData.comfortMessage}
                       </p>
                     </div>
 
                     <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
                       <span className="flex-shrink-0 text-base">⏰</span>
                       <p className="text-sm font-medium leading-relaxed text-amber-800">
-                        {aiData.timeAdvice}
+                        {detailData.timeAdvice}
                       </p>
                     </div>
-
-                    {showHighRiskSections && (
-                      <>
-                        <div className="space-y-2">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                            행동 가이드
-                          </p>
-                          {aiData.actionGuides.map((guide, i) => (
-                            <div
-                              key={i}
-                              className="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5"
-                            >
-                              <span className="mt-0.5 flex-shrink-0 text-xs font-bold text-slate-400">
-                                {i + 1}
-                              </span>
-                              <span className="text-sm text-slate-700">{guide}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="space-y-2">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                            핵심 요인
-                          </p>
-                          {aiData.riskFactors.map((factor, i) => (
-                            <div
-                              key={i}
-                              className="flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 px-4 py-2.5"
-                            >
-                              <span className="mt-0.5 flex-shrink-0 text-xs font-bold text-red-400">
-                                {i + 1}
-                              </span>
-                              <span className="text-sm text-red-800">{factor}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
                   </div>
                 )}
               </section>
