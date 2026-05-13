@@ -42,6 +42,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
   const [riskFilter, setRiskFilter] = useState<RiskFilterType>('전체');
+  const [riskRefreshKey, setRiskRefreshKey] = useState(0);
   const [cctvEnabled, setCctvEnabled] = useState(false);
   const [cctvs, setCctvs] = useState<PublicCctv[]>([]);
   const [cctvLoaded, setCctvLoaded] = useState(false);
@@ -55,7 +56,7 @@ export default function App() {
       .then((data) => setDistricts(data.map(mergeWithMock)))
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [riskFilter]);
+  }, [riskFilter, riskRefreshKey]);
 
   useEffect(() => {
     if (selectedDistrict && !districts.find((district) => district.id === selectedDistrict.id)) {
@@ -116,7 +117,7 @@ export default function App() {
             <span>오류</span>
             <span className="min-w-0 flex-1 truncate">API 연결 실패: {error}</span>
             <button
-              onClick={() => setRiskFilter((prev) => prev)}
+              onClick={() => setRiskRefreshKey((prev) => prev + 1)}
               className="underline text-red-600 hover:text-red-800"
             >
               다시 시도
