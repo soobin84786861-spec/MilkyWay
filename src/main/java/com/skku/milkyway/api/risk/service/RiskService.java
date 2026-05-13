@@ -157,7 +157,7 @@ public class RiskService {
 
         double riskIndex = calculateRiskIndex(weatherIndex, habitatFactor, trafficFactor);
         int baseRiskPercent = toPercent(riskIndex);
-        int riskPercent = applySeasonPolicy(baseRiskPercent, seasonGrade) + 60; // 임시 더미;
+        int riskPercent = applySeasonPolicy(baseRiskPercent, seasonGrade);
         double adjustedRiskIndex = round(riskPercent / 10.0);
         RiskLevel adjustedRiskLevel = toRiskLevel(riskPercent);
 
