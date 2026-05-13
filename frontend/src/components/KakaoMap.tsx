@@ -105,6 +105,7 @@ export default function KakaoMap({
   onDistrictClick,
   onCctvStreamOpen,
 }: Props) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const overlaysRef = useRef<Map<string, any>>(new Map());
   const polygonsRef = useRef<any[]>([]);
@@ -120,7 +121,7 @@ export default function KakaoMap({
     }
 
     window.kakao.maps.load(() => {
-      const container = document.getElementById('kakao-map');
+      const container = containerRef.current;
       if (!container) return;
 
       ensureCctvMarkerStyles();
@@ -138,6 +139,7 @@ export default function KakaoMap({
 
       mapRef.current.setMinLevel(7);
       mapRef.current.setMaxLevel(9);
+      scheduleMapRelayout();
 
       window.kakao.maps.event.addListener(mapRef.current, 'dragend', () => {
         const center = mapRef.current.getCenter();
@@ -156,6 +158,30 @@ export default function KakaoMap({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!mapRef.current || !containerRef.current) return;
+
+    const handleResize = () => scheduleMapRelayout();
+    window.addEventListener('resize', handleResize);
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => {
+            scheduleMapRelayout();
+          })
+        : null;
+
+    if (resizeObserver) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      resizeObserver?.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -390,9 +416,22 @@ export default function KakaoMap({
     cctvPopupRef.current = popup;
   }
 
+  function scheduleMapRelayout() {
+    if (!mapRef.current) return;
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        if (!mapRef.current) return;
+        const center = mapRef.current.getCenter();
+        mapRef.current.relayout();
+        mapRef.current.setCenter(center);
+      });
+    });
+  }
+
   return (
     <div className="relative w-full h-full bg-slate-100">
-      <div id="kakao-map" className="w-full h-full" />
+      <div ref={containerRef} id="kakao-map" className="w-full h-full" />
 
       {status === 'loading' && (
         <div className="absolute inset-0 flex items-center justify-center bg-slate-100/80">
