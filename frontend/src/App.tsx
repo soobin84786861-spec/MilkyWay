@@ -150,7 +150,13 @@ export default function App() {
           visible={!selectedDistrict}
         />
 
-        <DetailPanel district={selectedDistrict} onClose={() => setSelectedDistrict(null)} />
+        <DetailPanel
+          district={selectedDistrict}
+          isTop5District={
+            !!selectedDistrict && top5Districts.some((district) => district.id === selectedDistrict.id)
+          }
+          onClose={() => setSelectedDistrict(null)}
+        />
 
         {cctvViewer && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-3 backdrop-blur-[2px] sm:p-6">

@@ -1,7 +1,6 @@
 package com.skku.milkyway.api.ai.service;
 
 import com.skku.milkyway.api.ai.dto.AiRiskAnalysisResponse;
-import com.skku.milkyway.api.ai.dto.DefaultRegionRiskAnalysisResponse;
 import com.skku.milkyway.api.code.SeoulDistrict;
 import com.skku.milkyway.api.risk.response.RegionRiskResponse;
 import com.skku.milkyway.api.risk.service.RiskService;
@@ -27,21 +26,20 @@ public class AiRiskAnalysisService {
     private static final long CACHE_TTL_MS = 60 * 60 * 1000L;
     private static final String SYSTEM_PROMPT_PATH = "prompts/ai-risk-system.st";
     private static final String USER_PROMPT_PATH = "prompts/ai-risk-user.st";
-    private static final String DEFAULT_PROMPT_PATH = "prompts/ai-risk-default.st";
     private static final List<LifeStageContext> LIFE_STAGE_CONTEXTS = List.of(
             new LifeStageContext(1, 6, "유충기",
                     "현재는 러브버그가 땅속 또는 서식 환경에서 자라는 시기다. 성충 출몰은 보통 6월 중순 이후부터 시작되므로, 환경 조건은 유리해도 실제 대량 출몰 시점은 아직 아닐 수 있다."),
             new LifeStageContext(6, 8, "성충 활동기",
-                    "현재는 러브버그 성충이 활발하게 이동하고 관측되는 시기다. 기온, 습도, 조도 조건에 따라 실제 출몰 위험이 높아질 수 있다."),
+                    "현재는 러브버그 성충이 본격적으로 이동하고 관측되는 시기다. 기온, 습도, 조도 조건에 따라 실제 출몰 위험이 높아질 수 있다."),
             new LifeStageContext(9, 12, "비활동기",
-                    "현재는 러브버그 성충 활동이 거의 종료된 시기다. 일부 환경 요인은 높더라도 실제 출몰 가능성은 낮다.")
+                    "현재는 러브버그 성충 활동이 거의 종료된 시기다. 일부 환경 요인이 있더라도 실제 출몰 가능성은 낮다.")
     );
     private static final List<TimeAdviceContext> TIME_ADVICE_CONTEXTS = List.of(
-            new TimeAdviceContext(5, 10, "출근·등교 이동 시간대", "버스정류장, 횡단보도, 도로변처럼 실외 체류가 있는 시간대"),
+            new TimeAdviceContext(5, 10, "출근·등교 이동 시간대", "버스정류장, 횡단보도, 보행로처럼 야외 체류가 있는 시간대"),
             new TimeAdviceContext(10, 17, "주간 야외활동 시간대", "공원, 산책로, 주택가 골목 이동처럼 야외 체류가 이어지는 시간대"),
-            new TimeAdviceContext(17, 22, "퇴근 이후 야외활동 시간대", "조명 주변 체류 또는 귀가 이동이 늘어나는 시간대"),
-            new TimeAdviceContext(22, 24, "야간 실내관리 시간대", "귀가 후 환기, 창문 개방, 실내 유입 관리가 중요한 시간대"),
-            new TimeAdviceContext(0, 5, "야간 실내관리 시간대", "귀가 후 환기, 창문 개방, 실내 유입 관리가 중요한 시간대")
+            new TimeAdviceContext(17, 22, "일과 이후 야외활동 시간대", "조명 주변 체류 또는 귀가 이동이 늘어나는 시간대"),
+            new TimeAdviceContext(22, 24, "야간 실내관리 시간대", "귀가 후 환기, 창문 개방, 실내 유입 관리가 중요해지는 시간대"),
+            new TimeAdviceContext(0, 5, "야간 실내관리 시간대", "귀가 후 환기, 창문 개방, 실내 유입 관리가 중요해지는 시간대")
     );
 
     private record CachedEntry(AiRiskAnalysisResponse data, long timestamp) {
@@ -146,75 +144,6 @@ public class AiRiskAnalysisService {
         return result;
     }
 
-    public DefaultRegionRiskAnalysisResponse getDefaultAnalysis(SeoulDistrict district) {
-        RegionRiskResponse region = riskService.getRegion(district);
-        TimeAdviceContext timeAdviceContext = resolveTimeAdviceContext(LocalTime.now());
-        LifeStageContext lifeStageContext = resolveLifeStageContext(java.time.LocalDate.now().getMonthValue());
-        String prompt = renderTemplate(DEFAULT_PROMPT_PATH, Map.ofEntries(
-                Map.entry("jsonSchema", """
-                        {
-                          "type": "object",
-                          "properties": {
-                            "summary": { "type": "string" },
-                            "comfortMessage": { "type": "string" },
-                            "timeAdvice": { "type": "string" }
-                          },
-                          "required": ["summary", "comfortMessage", "timeAdvice"],
-                          "additionalProperties": false
-                        }
-                        """),
-                Map.entry("district", district.getKoreanName()),
-                Map.entry("riskPercent", region.getRiskPercent()),
-                Map.entry("riskLevel", region.getRiskLevel().getKoreanName()),
-                Map.entry("temperature", region.getTemperature()),
-                Map.entry("humidity", region.getHumidity()),
-                Map.entry("illumination", region.getIllumination()),
-                Map.entry("sky", region.getSky().getCode()),
-                Map.entry("precipitationType", region.getPrecipitationType().getCode()),
-                Map.entry("windSpeedMph", round(toMph(region.getWindSpeed()))),
-                Map.entry("weatherIndex", region.getWeatherIndex()),
-                Map.entry("habitatFactor", region.getHabitatFactor()),
-                Map.entry("trafficFactor", region.getTrafficFactor()),
-                Map.entry("riskIndex", region.getRiskIndex()),
-                Map.entry("instaCnt", region.getInstaCnt()),
-                Map.entry("timeSlotLabel", timeAdviceContext.label()),
-                Map.entry("timeAdviceSeed", timeAdviceContext.seed()),
-                Map.entry("currentMonth", java.time.LocalDate.now().getMonthValue()),
-                Map.entry("lifeStage", lifeStageContext.label()),
-                Map.entry("lifeStageContext", lifeStageContext.context())
-        ));
-
-        DefaultPromptResponse promptResponse;
-        try {
-            promptResponse = chatClient.prompt()
-                    .advisors(AdvisorParams.ENABLE_NATIVE_STRUCTURED_OUTPUT)
-                    .user(prompt)
-                    .call()
-                    .entity(DefaultPromptResponse.class);
-        } catch (RuntimeException e) {
-            log.error("[AI] default response generation failed - {}", district, e);
-            promptResponse = fallbackDefaultPromptResponse(region);
-        }
-
-        return new DefaultRegionRiskAnalysisResponse(
-                region.getDistrictCode(),
-                region.getRegionName(),
-                region.getRiskLevel(),
-                region.getRiskPercent(),
-                new DefaultRegionRiskAnalysisResponse.EvidenceData(
-                        region.getTemperature(),
-                        region.getHumidity(),
-                        region.getIllumination(),
-                        region.getSky().getCode(),
-                        region.getPrecipitationType().getCode(),
-                        region.getWindSpeed()
-                ),
-                promptResponse.summary(),
-                promptResponse.comfortMessage(),
-                promptResponse.timeAdvice()
-        );
-    }
-
     private LifeStageContext resolveLifeStageContext(int month) {
         return LIFE_STAGE_CONTEXTS.stream()
                 .filter(context -> context.matches(month))
@@ -247,11 +176,11 @@ public class AiRiskAnalysisService {
         return new AiRiskAnalysisResponse(
                 "현재 " + region.getRegionName() + "은 러브버그 출몰 가능성이 있어 주의가 필요한 상태입니다.",
                 "너무 걱정하지 말고, 필요한 만큼만 대비해도 충분합니다.",
-                "현재 시간대에는 실외 조명 주변 체류와 실내 유입 가능성을 함께 확인해보세요.",
+                "현재 시간대에는 야외 조명 주변 체류와 실내 유입 가능성을 함께 확인해보는 것이 좋습니다.",
                 List.of(
-                        "창문과 방충망 상태를 먼저 확인하세요.",
-                        "밝은 조명 주변 야외 체류 시간은 줄여보세요.",
-                        "귀가 후 의류와 차량 표면을 가볍게 털어주세요."
+                        "창문과 방충망 상태를 먼저 확인해보세요.",
+                        "밝은 조명 주변 야외 체류 시간을 줄여보세요.",
+                        "귀가 후 옷이나 차량 표면을 가볍게 털어주세요."
                 ),
                 List.of(
                         "현재 기온과 습도 조건이 러브버그 활동 가능성에 영향을 줍니다.",
@@ -261,26 +190,11 @@ public class AiRiskAnalysisService {
         );
     }
 
-    private DefaultPromptResponse fallbackDefaultPromptResponse(RegionRiskResponse region) {
-        return new DefaultPromptResponse(
-                "현재 " + region.getRegionName() + "의 러브버그 발생 위험도는 " + region.getRiskPercent() + "% 수준입니다.",
-                "현재 수치를 기준으로 과도한 불안보다는 기본적인 대비를 유지하면 충분합니다.",
-                "현재 시간대에는 야외 체류 전후로 옷과 창문 주변 상태를 한 번 더 확인해 주세요."
-        );
-    }
-
     private double toMph(double metersPerSecond) {
         return metersPerSecond * 2.23694;
     }
 
     private double round(double value) {
         return Math.round(value * 100.0) / 100.0;
-    }
-
-    private record DefaultPromptResponse(
-            String summary,
-            String comfortMessage,
-            String timeAdvice
-    ) {
     }
 }
