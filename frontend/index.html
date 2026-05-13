@@ -4,38 +4,75 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>러브버그 위험도 지도</title>
+    <title>서울 러브버그 위험도 지도 | 실시간 자치구별 러브버그 정보</title>
     <meta
       name="description"
-      content="서울 전역의 러브버그 출몰 위험도를 실시간으로 확인하세요."
+      content="서울 자치구별 러브버그 출몰 위험도를 실시간으로 확인하세요. 지도 기반 위험도, CCTV, 기상 정보, AI 요약으로 서울 러브버그 상황을 한눈에 볼 수 있습니다."
     />
-    <link rel="canonical" href="https://lovebugmap.co.kr" />
+    <meta
+      name="keywords"
+      content="러브버그, 서울 러브버그, 러브버그 지도, 러브버그 위험도, 서울 해충 지도, 자치구 위험도"
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="canonical" href="https://lovebugmap.co.kr/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <meta property="og:title" content="러브버그 위험도 지도" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="러브버그 위험도 지도" />
+    <meta property="og:title" content="서울 러브버그 위험도 지도" />
     <meta
       property="og:description"
-      content="서울 전역의 러브버그 출몰 위험도를 실시간으로 확인하세요."
+      content="서울 자치구별 러브버그 출몰 위험도를 실시간으로 확인하고 CCTV와 기상 정보까지 함께 살펴보세요."
     />
+    <meta property="og:url" content="https://lovebugmap.co.kr/" />
     <meta property="og:image" content="https://lovebugmap.co.kr/og-image.png" />
-    <meta property="og:url" content="https://lovebugmap.co.kr" />
-    <meta property="og:type" content="website" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="서울 러브버그 위험도 지도" />
+    <meta
+      name="twitter:description"
+      content="서울 자치구별 러브버그 출몰 위험도를 실시간으로 확인하고 CCTV와 기상 정보까지 함께 살펴보세요."
+    />
+    <meta name="twitter:image" content="https://lovebugmap.co.kr/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "러브버그 위험도 지도",
+        "url": "https://lovebugmap.co.kr/",
+        "inLanguage": "ko-KR",
+        "description": "서울 자치구별 러브버그 출몰 위험도를 실시간으로 보여주는 지도 서비스"
+      }
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "러브버그 위험도 지도",
+        "url": "https://lovebugmap.co.kr/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "ko-KR",
+        "description": "서울 자치구별 러브버그 위험도, CCTV, 기상 정보, AI 요약을 확인할 수 있는 웹 서비스"
+      }
+    </script>
 
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
     />
 
-    <!--
-      Kakao Maps SDK는 index.html에서 직접 로드합니다.
-      Vite HTML 환경변수 치환을 사용해 로컬 .env 값으로 키를 주입합니다.
-    -->
     <script
       type="text/javascript"
       src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=%VITE_KAKAO_MAP_KEY%&autoload=false"
     ></script>
   </head>
   <body>
+    <noscript>서울 러브버그 위험도 지도를 보려면 자바스크립트를 활성화해 주세요.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

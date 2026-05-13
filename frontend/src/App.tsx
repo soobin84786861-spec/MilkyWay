@@ -95,6 +95,14 @@ export default function App() {
 
   return (
     <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-slate-100">
+      <header className="sr-only">
+        <h1>서울 러브버그 위험도 지도</h1>
+        <p>
+          서울 자치구별 러브버그 출몰 위험도를 실시간으로 보여주고 CCTV, 기상 정보, AI 요약을 함께
+          제공하는 서비스입니다.
+        </p>
+      </header>
+
       <TopNav
         riskFilter={riskFilter}
         onRiskFilterChange={setRiskFilter}
